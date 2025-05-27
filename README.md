@@ -1,0 +1,152 @@
+# Mini-Shop (Shopee Mini)
+
+A simple e-commerce application with a **Nuxt.js** frontend and **Hapi.js** backend, powered by **Prisma** ORM and **PostgreSQL**.
+
+## Table of Contents
+
+* [Features](#features)
+* [Tech Stack](#tech-stack)
+* [Prerequisites](#prerequisites)
+* [Installation](#installation)
+* [Environment Variables](#environment-variables)
+* [Database Setup](#database-setup)
+* [Running the Application](#running-the-application)
+* [API Endpoints](#api-endpoints)
+* [Contact](#contact)
+
+## Features
+
+* User registration & JWT authentication
+* Role-based access control (USER / ADMIN)
+* Product & Category management (CRUD)
+* Shopping cart (add, update, remove items)
+* Order checkout & history
+* Validation via Zod
+* API documentation with Swagger UI
+
+## Tech Stack
+
+* **Frontend:** Nuxt.js
+* **Backend:** Hapi.js
+* **ORM/ODM:** Prisma
+* **Database:** PostgreSQL
+* **Authentication:** JSON Web Tokens (JWT)
+* **Validation:** Zod
+* **API Docs:** Swagger (Hapi Swagger)
+
+## Prerequisites
+
+* Node.js v14+ or v16+
+* npm or yarn
+* PostgreSQL instance
+
+## Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/your-username/mini-shop.git
+   cd mini-shop
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+## Environment Variables
+
+Create a `.env` file at the project root with the following:
+
+```ini
+# Server
+PORT=3000
+
+# Database
+DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<database>?schema=public"
+
+# JWT Secret
+JWT_SECRET=your_jwt_secret
+```
+
+## Database Setup
+
+1. **Generate Prisma Client**
+
+   ```bash
+   npx prisma generate
+   ```
+2. **Run migrations**
+
+   ```bash
+   npx prisma migrate dev --name init
+   ```
+
+## Running the Application
+
+1. **Start the backend**
+
+   ```bash
+   npm run dev    # starts Hapi server on http://localhost:3000
+   ```
+2. **Start the frontend**
+
+   ```bash
+   cd frontend
+   npm run dev    # starts Nuxt.js on http://localhost:3001
+   ```
+
+## API Endpoints
+
+Visit **[http://localhost:3000/documentation](http://localhost:3000/documentation)** for interactive Swagger UI and full API reference.
+
+### Authentication
+
+* `POST /auth/login` – Login with email & password
+
+### Users
+
+* `POST /users` – Register new user
+* `GET /users` – List users (Admin only)
+* `GET /users/{id}` – Get user by ID
+* `PUT /users/{id}` – Update user
+* `DELETE /users/{id}` – Delete user
+
+### Categories (Admin only for write ops)
+
+* `GET /categories`
+* `GET /categories/{id}`
+* `POST /categories` (Admin)
+* `PUT /categories/{id}` (Admin)
+* `DELETE /categories/{id}` (Admin)
+
+### Products (Admin only for write ops)
+
+* `GET /products`
+* `GET /products/{id}`
+* `POST /products` (Admin)
+* `PUT /products/{id}` (Admin)
+* `DELETE /products/{id}` (Admin)
+
+### Cart (Authenticated users)
+
+* `GET /cart` – View current user’s cart
+* `POST /cart/items` – Add item
+* `PUT /cart/items/{id}` – Update quantity
+* `DELETE /cart/items/{id}` – Remove item
+
+### Orders (Authenticated users)
+
+* `POST /orders` – Checkout
+* `GET /orders` – List my orders
+* `GET /orders/{id}` – Order details
+* `PUT /orders/{id}/status` – Update status (Admin or via webhook)
+
+## Contact
+
+For questions or feedback, reach out to:
+
+**Email:** [jonathandoillon2002@gmail.com](mailto:jonathandoillon2002@gmail.com)
