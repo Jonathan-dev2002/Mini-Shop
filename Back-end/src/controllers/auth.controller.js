@@ -1,11 +1,9 @@
-const Boom = require("@hapi/boom");
-
 const { signToken } = require("../utils/jwt");
 const userService = require("../services/user.service");
 const validateZod = require("../validations/validateZod")
 const { loginSchema } = require("../validations/auth.validation");
 
-//POST /auth/login
+
 const login = {
   description: "User login and get JWT token",
   tags: ["api", "auth"],
@@ -19,16 +17,14 @@ const login = {
       const userRecord = await userService.getUserByEmail(email);
 
       if (!userRecord) {
-        // return Boom.unauthorized(h, "Invalid credentials");
-        return "t1"
+        return h.response("Invalid credentials").code(401)
       }
   
       const valid = await userService.comparePassword(userRecord, password);
       if (!valid) {
-        return Boom.unauthorized("Invalid credentials");
+        return h.response("Invalid credentials").code(401)
       }
   
-      // const token = signToken({ uId: userRecord.uId,role: userRecord.role});
       const token = signToken({ sub: userRecord.id, role: userRecord.role });
 
       const safeUser = {
@@ -38,8 +34,7 @@ const login = {
         email: userRecord.email,
         role: userRecord.role
       };
-    //   return success(h, { token, user: safeUser }, "Login successful");
-      return h.response({ token, user: safeUser })
+      return h.response({ token, user: safeUser }).code(200)
     } catch (err) {
       console.error(err);
       return error(h, err.message);

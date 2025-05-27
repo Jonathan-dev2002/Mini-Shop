@@ -1,4 +1,4 @@
-const userController = require("../controllers/user.controllers");
+const userController = require("../controllers/user.controller");
 const { requireAdmin } = require("../utils/authorization");
 module.exports = [
   {

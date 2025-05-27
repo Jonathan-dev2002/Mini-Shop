@@ -1,4 +1,4 @@
-const productController = require("../controllers/product.controllers");
+const productController = require("../controllers/product.controller");
 const { requireAdmin } = require("../utils/authorization");
 
 module.exports = [
