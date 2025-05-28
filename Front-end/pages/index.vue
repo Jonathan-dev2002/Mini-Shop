@@ -7,10 +7,10 @@
 
         <template v-else>
             <h1 v-if="user?.role === 'ADMIN'">
-                welcome admin, {{ user.firstName }}!
+                welcome Role, {{ user.firstName }}!
             </h1>
             <h1 v-else-if="user?.role === 'USER'">
-                welcome user, {{ user.firstName }}
+                welcome Role, {{ user.firstName }}
             </h1>
         </template>
     </div>
@@ -44,11 +44,16 @@ const { data: data } = await useFetch('http://localhost:3000/products')
         width: 1500px;
         margin: auto;
         display: flex;
+        justify-content: center;
         flex-wrap: wrap;
         gap: 2em;
     }
     .box{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         padding: 1em;
+        width: 400px;
         background-color: rgb(231, 231, 231);
     }
 </style>

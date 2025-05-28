@@ -42,11 +42,11 @@ nav {
     justify-content: center;
     align-items: center;
     gap: 10px;
-    background-color: blue;
+    background-color: rgb(124, 124, 124);
     padding: 1em;
 
 
-    a {
+    a,span {
         text-decoration: none;
         color: white
     }
