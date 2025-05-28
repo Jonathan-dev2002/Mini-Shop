@@ -1,4 +1,4 @@
-require("dotenv").config({ path: ".env" }); 
+require("dotenv").config({ path: ".env" });
 
 const Hapi = require("@hapi/hapi");
 const { prismaPlugin } = require("./src/plugins/prisma");
@@ -13,8 +13,12 @@ const init = async () => {
     routes: {
       validate: {
         failAction: async (request, h, err) => {
-          throw err; 
+          throw err;
         },
+      },
+      cors: {
+        origin: ["http://localhost:3001"], // ให้ตรงกับ URL Nuxt Dev Server
+        credentials: true,
       },
     },
   });
