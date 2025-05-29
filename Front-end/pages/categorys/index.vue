@@ -1,63 +1,82 @@
-<!-- Front-end/pages/categorys/index.vue -->
 <template>
-    <div>
-        <h1>Category Management</h1>
+  <div>
+    <h1>Category Management</h1>
 
-        <!-- ฟอร์มสร้างใหม่ -->
-        <div class="create-form">
-            <input v-model="newName" placeholder="ชื่อหมวดหมู่ใหม่" @keyup.enter="createCategory" />
-            <button @click="createCategory">Create</button>
+    <button class="btn-primary" @click="openCreateModal">+ New Category</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Created At</th>
+          <th>Updated At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-if="isLoading">
+          <td colspan="5">Loading…</td>
+        </tr>
+        <tr v-else-if="loadError">
+          <td colspan="5" class="text-error">Failed to load</td>
+        </tr>
+        <tr v-else v-for="cat in categories" :key="cat.id">
+          <td>{{ cat.id }}</td>
+          <td>{{ cat.name }}</td>
+          <td>{{ cat.createdAt }}</td>
+          <td>{{ cat.updatedAt }}</td>
+          <td>
+            <button @click="openEditModal(cat)" class="btn-sm">Edit</button>
+            <button @click="openDeleteModal(cat.id)" class="btn-sm text-error">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Create Modal -->
+    <div v-if="showCreateModal" class="modal-overlay">
+      <div class="modal">
+        <h2>Create Category</h2>
+        <input v-model="modalName" placeholder="Enter name" />
+        <div class="modal-actions">
+          <button @click="confirmCreate" class="btn-primary">Save</button>
+          <button @click="closeCreateModal">Cancel</button>
         </div>
-
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>Checkbox</th>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Created At</th>
-                    <th>Updated At</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Loading / Error -->
-                <tr v-if="isLoading">
-                    <td colspan="6">Loading…</td>
-                </tr>
-                <tr v-else-if="loadError">
-                    <td colspan="6" style="color: red">Failed to load</td>
-                </tr>
-
-                <!-- Data Rows -->
-                <tr v-else v-for="cat in categories" :key="cat.id">
-                    <td><input type="checkbox" /></td>
-                    <td>{{ cat.id }}</td>
-
-                    <!-- ถ้าอยู่ในโหมดแก้ไข แสดง input -->
-                    <td v-if="editingId === cat.id">
-                        <input v-model="editedName" />
-                    </td>
-                    <td v-else>{{ cat.name }}</td>
-
-                    <td>{{ cat.createdAt }}</td>
-                    <td>{{ cat.updatedAt }}</td>
-
-                    <!-- ปุ่มแก้ไข / ยืนยัน / ยกเลิก / ลบ -->
-                    <td>
-                        <template v-if="editingId === cat.id">
-                            <button @click="updateCategory(cat.id)">Save</button>
-                            <button @click="cancelEdit">Cancel</button>
-                        </template>
-                        <template v-else>
-                            <button @click="startEdit(cat)">Edit</button>
-                            <button @click="deleteCategory(cat.id)">Delete</button>
-                        </template>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+      </div>
     </div>
+
+    <!-- Edit Modal -->
+    <div v-if="showEditModal" class="modal-overlay">
+      <div class="modal">
+        <h2>Edit Category</h2>
+        <input v-model="modalName" />
+        <div class="modal-actions">
+          <button @click="confirmEdit" class="btn-primary">Update</button>
+          <button @click="closeEditModal">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay">
+      <div class="modal">
+        <h2>Confirm Delete</h2>
+        <p>Are you sure you want to delete?</p>
+        <div class="modal-actions">
+          <button @click="confirmDelete" class="btn-primary text-error">Yes</button>
+          <button @click="closeDeleteModal">No</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container">
+      <div v-for="(msg, i) in toasts" :key="i" class="toast">
+        {{ msg }}
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -68,106 +87,188 @@ const { $api } = useNuxtApp()
 const categories = ref([])
 const isLoading = ref(true)
 const loadError = ref(false)
-const newName = ref('')
 
-// edit state
-const editingId = ref(null)
-const editedName = ref('')
+// modal state & temp data
+const showCreateModal = ref(false)
+const showEditModal = ref(false)
+const showDeleteModal = ref(false)
+const modalName = ref('')
+const editId = ref(null)
+const deleteId = ref(null)
+
+// toast state
+const toasts = ref([])
+
+// helper to push a toast and auto-remove
+function pushToast(msg) {
+  toasts.value.push(msg)
+  setTimeout(() => {
+    toasts.value.shift()
+  }, 3000)
+}
 
 async function fetchCategories() {
-    isLoading.value = true
-    loadError.value = false
-    try {
-        categories.value = await $api('/categorys')
-    } catch {
-        loadError.value = true
-    } finally {
-        isLoading.value = false
-    }
+  isLoading.value = true
+  loadError.value = false
+  try {
+    categories.value = await $api('/categorys')
+  } catch {
+    loadError.value = true
+  } finally {
+    isLoading.value = false
+  }
 }
 
 // Create
-async function createCategory() {
-    if (!newName.value.trim()) return
-    try {
-        await $api('/categorys', {
-            method: 'POST',
-            body: { name: newName.value.trim() }
-        })
-        newName.value = ''
-        await fetchCategories()
-    } catch (e) {
-        console.error('Create failed', e)
-    }
+function openCreateModal() {
+  modalName.value = ''
+  showCreateModal.value = true
+}
+function closeCreateModal() {
+  showCreateModal.value = false
+}
+async function confirmCreate() {
+  if (!modalName.value.trim()) return
+  try {
+    await $api('/categorys',
+      {
+        method: 'POST',
+        body: { name: modalName.value.trim() }
+      })
+    closeCreateModal()
+    await fetchCategories()
+    pushToast('Category created!')
+  }
+  catch (e) {
+    console.error('Create failed', e)
+  }
 }
 
-// Start editing
-function startEdit(cat) {
-    editingId.value = cat.id
-    editedName.value = cat.name
+// Edit
+function openEditModal(cat) {
+  editId.value = cat.id
+  modalName.value = cat.name
+  showEditModal.value = true
 }
-
-// Cancel edit
-function cancelEdit() {
-    editingId.value = null
-    editedName.value = ''
+function closeEditModal() {
+  showEditModal.value = false
+  editId.value = null
 }
-
-// Update
-async function updateCategory(id) {
-    if (!editedName.value.trim()) return
-    try {
-        await $api(`/categorys/${id}`, {
-            method: 'PUT',
-            body: { name: editedName.value.trim() }
-        })
-        cancelEdit()
-        await fetchCategories()
-    } catch (e) {
-        console.error('Update failed', e)
-    }
+async function confirmEdit() {
+  if (!modalName.value.trim()) return
+  try {
+    await $api(`/categorys/${editId.value}`, {
+      method: 'PUT',
+      body: { name: modalName.value.trim() }
+    })
+    closeEditModal()
+    await fetchCategories()
+    pushToast('Category updated!')
+  }
+  catch (e) {
+    console.error('Edit failed', e)
+  }
 }
 
 // Delete
-async function deleteCategory(id) {
-    if (!confirm('Delete this category?')) return
-    try {
-        await $api(`/categorys/${id}`, { method: 'DELETE' })
-        await fetchCategories()
-    } catch (e) {
-        console.error('Delete failed', e)
-    }
+function openDeleteModal(id) {
+  deleteId.value = id
+  showDeleteModal.value = true
+}
+function closeDeleteModal() {
+  showDeleteModal.value = false
+}
+async function confirmDelete() {
+  try {
+    await $api(`/categorys/${deleteId.value}`, {
+      method: 'DELETE'
+    })
+    closeDeleteModal()
+    await fetchCategories()
+    pushToast('Category deleted!')
+  } catch (e) {
+    console.error('Delete failed', e)
+  }
 }
 
-// initial load
 onMounted(fetchCategories)
 </script>
 
 <style scoped>
-.create-form {
-    margin-bottom: 1rem;
-}
-
-.create-form input {
-    padding: 0.5rem;
-    margin-right: 0.5rem;
-}
-
-.create-form button {
-    padding: 0.5rem 1rem;
-}
-
+/* ตาราง */
 table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
 }
 
 th,
 td {
-    padding: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
 }
 
-button {
-    margin-right: 0.3rem;
+.btn-primary {
+  background: #4caf50;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-sm {
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+}
+
+.text-error {
+  color: #c00;
+}
+
+/* Modal overlay & box */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 300px;
+}
+
+.modal-actions {
+  margin-top: 1rem;
+  text-align: right;
+}
+
+.modal-actions button {
+  margin-left: 0.5rem;
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.toast {
+  background: #333;
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 </style>

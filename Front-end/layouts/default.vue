@@ -14,10 +14,11 @@
         <template v-else-if="user && user.role === 'ADMIN'">
           <NuxtLink to="/products">Products</NuxtLink>
           <NuxtLink to="/categorys">Categorys</NuxtLink>
+          <NuxtLink to="/manageAcc">Manage Accout</NuxtLink>
           <span>{{ user.firstName }}</span>
           <button @click="logout" style="margin-left: 1em;">Logout</button>
         </template>
-
+  
         <template v-else-if="user && user.role === 'USER'">
           <span>{{ user.firstName }}</span>
           <button @click="logout" style="margin-left: 1em;">Logout</button>
