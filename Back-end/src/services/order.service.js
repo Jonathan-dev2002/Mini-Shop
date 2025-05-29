@@ -2,7 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 //สร้างคำสั่งซื้อจากตะกร้าของผู้ใช้
-const createOrder = async (userId) => {
+const createOrder = async (userId, paymentMethod, shippingAddress, phone) => {
   // ดึงตะกร้าพร้อมรายการสินค้าและข้อมูลสินค้า
   const cart = await prisma.cart.findUnique({
     where: { userId },
@@ -24,13 +24,17 @@ const createOrder = async (userId) => {
   });
 
   // ทำทุกอย่างใน transaction เดียวกัน
+  const initialStatus = paymentMethod === "COD" ? "CONFIRMED" : "PENDING";
   const result = await prisma.$transaction(async (tx) => {
     // สร้าง order หลัก
     const order = await tx.order.create({
       data: {
         userId,
         totalAmount,
-        status: "PENDING",
+        status: initialStatus,
+        paymentMethod,
+        shippingAddress,
+        phone,
       },
     });
 
@@ -86,8 +90,44 @@ const getOrderById = async (userId, orderId) => {
   });
 };
 
+const updateOrderStatus = async (userId, orderId, newStatus) => {
+  
+  // 1. ถ้าเป็นยกเลิก (CANCELLED) ให้คืน stock ก่อน
+  if (newStatus === "CANCELLED") {
+    // ดึง order พร้อม items
+    const order = await prisma.order.findUnique({
+      where: { id: Number(orderId) },
+      include: { items: true },
+    });
+    if (!order) throw new Error("Order not found");
+
+    // ทำ transaction: คืน stock แล้วอัพเดตสถานะ
+    return await prisma.$transaction(async (tx) => {
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+      return tx.order.update({
+        where: { id: Number(orderId) },
+        data: { status: newStatus },
+        include: { items: { include: { product: true } } },
+      });
+    });
+  }
+
+  // กรณีอื่นๆ แค่เปลี่ยนสถานะตามปกติ
+  return prisma.order.update({
+    where: { id: Number(orderId) },
+    data: { status: newStatus },
+    include: { items: { include: { product: true } } },
+  });
+};
+
 module.exports = {
   createOrder,
   getOrdersByUser,
   getOrderById,
+  updateOrderStatus,
 };
