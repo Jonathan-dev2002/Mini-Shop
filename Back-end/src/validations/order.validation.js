@@ -1,5 +1,5 @@
-const { z } = require('zod');
-const { PaymentMethod, OrderStatus } = require('@prisma/client');
+const { z } = require("zod");
+const { PaymentMethod, OrderStatus } = require("@prisma/client");
 
 const idParamSchema = z.object({
   id: z.string().regex(/^\d+$/, "Invalid ID format"),
@@ -10,10 +10,10 @@ const createOrderSchema = z.object({
   phone: z.string().min(1, "Phone is required"),
 });
 const updateStatusSchema = z.object({
-  status: z.nativeEnum(OrderStatus)
+  status: z.nativeEnum(OrderStatus),
 });
 module.exports = {
   idParamSchema,
   createOrderSchema,
-  updateStatusSchema
+  updateStatusSchema,
 };
