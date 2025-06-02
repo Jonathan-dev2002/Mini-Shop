@@ -18,25 +18,27 @@
                 </tr>
             </thead>
             <tbody>
+                <!-- สถานะ Loading -->
                 <tr v-if="isLoading">
                     <td colspan="9">Loading…</td>
                 </tr>
+                <!-- สถานะ Error -->
                 <tr v-else-if="loadError">
                     <td colspan="9" class="text-error">Failed to load</td>
                 </tr>
-                <tr v-for="data in products" :key="data.id">
-
-                    <td>{{ data.id }}</td>
-                    <td>{{ data.name }}</td>
-                    <td>{{ data.description }}</td>
-                    <td>{{ data.price }}</td>
-                    <td>{{ data.stock }}</td>
-                    <td>{{ data.createdAt }}</td>
-                    <td>{{ data.updatedAt }}</td>
-                    <td>{{ data.category.name }}</td>
+                <!-- แสดงข้อมูลสินค้าเมื่อพร้อม -->
+                <tr v-else v-for="item in products" :key="item.id">
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.price }}</td>
+                    <td>{{ item.stock }}</td>
+                    <td>{{ item.createdAt }}</td>
+                    <td>{{ item.updatedAt }}</td>
+                    <td>{{ item.category.name }}</td>
                     <td>
-                        <button @click="openEditModal(data)" class="btn-sm">Edit</button>
-                        <button @click="openDeleteModal(data.id)" class="btn-sm text-error">Delete</button>
+                        <button @click="openEditModal(item)" class="btn-sm">Edit</button>
+                        <button @click="openDeleteModal(item.id)" class="btn-sm text-error">Delete</button>
                     </td>
                 </tr>
             </tbody>
@@ -53,7 +55,7 @@
                 <label>
                     Category:
                     <select v-model="modalCate">
-                        <option v-for="c in cateList" :key="c.id" :value="c.id">
+                        <option v-for="c in categories" :key="c.id" :value="c.id">
                             {{ c.name }}
                         </option>
                     </select>
@@ -68,7 +70,7 @@
         <!-- Edit Modal -->
         <div v-if="showEditModal" class="modal-overlay">
             <div class="modal">
-                <h2>Edit Account</h2>
+                <h2>Edit Product</h2>
                 <input v-model="modalName" placeholder="Enter Name" />
                 <input v-model="modalDescription" placeholder="Enter description" />
                 <input v-model="modalPrice" placeholder="Enter Price" />
@@ -76,7 +78,7 @@
                 <label>
                     Category:
                     <select v-model="modalCate">
-                        <option v-for="c in cateList" :key="c.id" :value="c.id">
+                        <option v-for="c in categories" :key="c.id" :value="c.id">
                             {{ c.name }}
                         </option>
                     </select>
@@ -110,187 +112,51 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-const { $api } = useNuxtApp()
+import { onMounted } from 'vue'
+import { useProduct } from '~/composables/useProduct'
+import { useCategory } from '~/composables/useCategory'
 
-//state produuct
-const products = ref([])
-const isLoading = ref(true)
-const loadError = ref(false)
+// เรียก Composable สินค้า
+const {
+    products,
+    isLoading,
+    loadError,
+    showCreateModal,
+    showEditModal,
+    showDeleteModal,
+    modalName,
+    modalDescription,
+    modalPrice,
+    modalStock,
+    modalCate,
+    toasts,
+    fetchProducts,
+    openCreateModal,
+    closeCreateModal,
+    confirmCreate,
+    openEditModal,
+    closeEditModal,
+    confirmEdit,
+    openDeleteModal,
+    closeDeleteModal,
+    confirmDelete
+} = useProduct()
 
-//state create modal
-const showCreateModal = ref(false)
-const modalName = ref('')
-const modalDescription = ref('')
-const modalPrice = ref('')
-const modalStock = ref('')
-const modalCate = ref(null)
-
-//state edit modal
-const showEditModal = ref(false)
-const editId = ref(null)
-
-//state delete modal
-const showDeleteModal = ref(false)
-const deleteId = ref(null)
-
-//state categort
-const cateList = ref([])
-
-//state toast
-const toasts = ref([])
-
-
-function pushToast(msg) {
-    toasts.value.push(msg)
-    setTimeout(() => {
-        toasts.value.shift()
-    }, 3000)
-}
-
-//Fetch product
-async function fetchProducts() {
-    isLoading.value = true
-    loadError.value = false
-    try {
-        products.value = await $api('/products')
-    } catch {
-        loadError.value = true
-    } finally {
-        isLoading.value = false
-    }
-}
-
-//fetch category
-async function fetchCategories() {
-    try {
-        cateList.value = await $api('/categorys')
-    } catch (e) {
-        console.error('Failed fetch categories', e)
-    }
-}
-
-//Create modal
-const openCreateModal = () => {
-    modalName.value = ''
-    modalDescription.value = ''
-    modalPrice.value = ''
-    modalStock.value = ''
-    modalCate.value = cateList.value[0]?.id || null
-    showCreateModal.value = true
-}
-const closeCreateModal = () => {
-    showCreateModal.value = false
-}
-const confirmCreate = async () => {
-    if (
-        !modalName.value.trim() ||
-        !modalDescription.value.trim() ||
-        !modalPrice.value ||
-        !modalStock.value ||
-        !modalCate.value
-    ) return
-
-    const payload = {
-        name: modalName.value.trim(),
-        description: modalDescription.value.trim(),
-        price: Number(modalPrice.value),
-        stock: Number(modalStock.value),
-        categoryId: modalCate.value.toString().trim()
-    }
-    console.log('▶️ POST /products payload:', payload)
-    try {
-        await $api('/products',
-            {
-                method: 'POST',
-                body: payload
-            })
-        closeCreateModal()
-        await fetchProducts()
-        pushToast('Product created!')
-
-    } catch (e) {
-        console.error('Create falied', e)
-    }
-}
-
-//edit
-const openEditModal = (data) => {
-    editId.value = data.id
-    modalName.value = data.name
-    modalDescription.value = data.description
-    modalPrice.value = data.price
-    modalStock.value = data.stock
-    modalCate.value = data.category.id
-    showEditModal.value = true
-}
-const closeEditModal = () => {
-    showEditModal.value = false
-    editId.value = null
-}
-const confirmEdit = async () => {
-    const payload = {}
-    if (modalName.value.trim()) {
-        payload.name = modalName.value.trim()
-    }
-    if (modalDescription.value.trim()) {
-        payload.description = modalDescription.value.trim()
-    }
-    if (modalPrice.value != null) {
-        payload.price = Number(modalPrice.value)
-    }
-    if (modalStock.value != null) {
-        payload.stock = Number(modalStock.value)
-    }
-    if (modalCate.value !== null) {
-        payload.categoryId = modalCate.value.toString()
-    }
-    if (!Object.keys(payload).length) {
-        return
-    }
-    try {
-        await $api(`/products/${editId.value}`, {
-            method: 'PUT',
-            body: payload
-        })
-        closeEditModal()
-        await fetchProducts()
-        pushToast('Product updated!')
-    } catch (e) {
-        console.error('Edit failed', e)
-    }
-}
-
-//delete
-const openDeleteModal = (data)=>{
-    deleteId.value = data
-    showDeleteModal.value = true
-}
-const closeDeleteModal = ()=>{
-    showDeleteModal.value = false
-}
-const confirmDelete = async()=>{
-    try{
-        await $api(`products/${deleteId.value}`,{
-            method: 'DELETE',
-        })
-        closeDeleteModal()
-        await fetchProducts()
-        pushToast('Product deleted!')
-    }catch(e){
-        console.error('Delete falied',e)
-    }
-}
+// เรียก Composable หมวดหมู่
+const {
+    categories,
+    loadError: cateError,
+    fetchCategories
+} = useCategory()
 
 onMounted(async () => {
     await fetchCategories()
     await fetchProducts()
 })
-
 </script>
 
 <style scoped>
-/* ตาราง */
+/* (Copy มาจากเดิม) */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -320,7 +186,6 @@ td {
     color: #c00;
 }
 
-/* Modal overlay & box */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -349,7 +214,6 @@ td {
     margin-left: 0.5rem;
 }
 
-/* Toast */
 .toast-container {
     position: fixed;
     bottom: 1rem;

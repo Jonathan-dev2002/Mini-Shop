@@ -1,7 +1,7 @@
+<!-- Front-end/pages/categorys/index.vue -->
 <template>
   <div>
     <h1>Category Management</h1>
-
     <button class="btn-primary" @click="openCreateModal">+ New Category</button>
 
     <table>
@@ -15,12 +15,15 @@
         </tr>
       </thead>
       <tbody>
+        <!-- กรณีกำลังโหลด -->
         <tr v-if="isLoading">
           <td colspan="5">Loading…</td>
         </tr>
+        <!-- กรณีโหลดข้อมูลไม่สำเร็จ -->
         <tr v-else-if="loadError">
           <td colspan="5" class="text-error">Failed to load</td>
         </tr>
+        <!-- ปกติ: วนแสดง categories -->
         <tr v-else v-for="cat in categories" :key="cat.id">
           <td>{{ cat.id }}</td>
           <td>{{ cat.name }}</td>
@@ -58,7 +61,7 @@
       </div>
     </div>
 
-    <!-- Delete Confirm Modal -->
+    <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="modal-overlay">
       <div class="modal">
         <h2>Confirm Delete</h2>
@@ -70,7 +73,7 @@
       </div>
     </div>
 
-    <!-- Toast Container -->
+    <!-- Toasts -->
     <div class="toast-container">
       <div v-for="(msg, i) in toasts" :key="i" class="toast">
         {{ msg }}
@@ -80,122 +83,36 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-const { $api } = useNuxtApp()
+import { onMounted } from 'vue'
+import { useCategory } from '~/composables/useCategory'
 
-// state
-const categories = ref([])
-const isLoading = ref(true)
-const loadError = ref(false)
 
-// modal state & temp data
-const showCreateModal = ref(false)
-const showEditModal = ref(false)
-const showDeleteModal = ref(false)
-const modalName = ref('')
-const editId = ref(null)
-const deleteId = ref(null)
+const {
+  categories,
+  isLoading,
+  loadError,
+  showCreateModal,
+  showEditModal,
+  showDeleteModal,
+  modalName,
+  toasts,
+  fetchCategories,
+  openCreateModal,
+  closeCreateModal,
+  confirmCreate,
+  openEditModal,
+  closeEditModal,
+  confirmEdit,
+  openDeleteModal,
+  closeDeleteModal,
+  confirmDelete
+} = useCategory()
 
-// toast state
-const toasts = ref([])
-
-// helper to push a toast and auto-remove
-function pushToast(msg) {
-  toasts.value.push(msg)
-  setTimeout(() => {
-    toasts.value.shift()
-  }, 3000)
-}
-
-async function fetchCategories() {
-  isLoading.value = true
-  loadError.value = false
-  try {
-    categories.value = await $api('/categorys')
-  } catch {
-    loadError.value = true
-  } finally {
-    isLoading.value = false
-  }
-}
-
-// Create
-function openCreateModal() {
-  modalName.value = ''
-  showCreateModal.value = true
-}
-function closeCreateModal() {
-  showCreateModal.value = false
-}
-async function confirmCreate() {
-  if (!modalName.value.trim()) return
-  try {
-    await $api('/categorys',
-      {
-        method: 'POST',
-        body: { name: modalName.value.trim() }
-      })
-    closeCreateModal()
-    await fetchCategories()
-    pushToast('Category created!')
-  }
-  catch (e) {
-    console.error('Create failed', e)
-  }
-}
-
-// Edit
-function openEditModal(cat) {
-  editId.value = cat.id
-  modalName.value = cat.name
-  showEditModal.value = true
-}
-function closeEditModal() {
-  showEditModal.value = false
-  editId.value = null
-}
-async function confirmEdit() {
-  if (!modalName.value.trim()) return
-  try {
-    await $api(`/categorys/${editId.value}`, {
-      method: 'PUT',
-      body: { name: modalName.value.trim() }
-    })
-    closeEditModal()
-    await fetchCategories()
-    pushToast('Category updated!')
-  }
-  catch (e) {
-    console.error('Edit failed', e)
-  }
-}
-
-// Delete
-function openDeleteModal(id) {
-  deleteId.value = id
-  showDeleteModal.value = true
-}
-function closeDeleteModal() {
-  showDeleteModal.value = false
-}
-async function confirmDelete() {
-  try {
-    await $api(`/categorys/${deleteId.value}`, {
-      method: 'DELETE'
-    })
-    closeDeleteModal()
-    await fetchCategories()
-    pushToast('Category deleted!')
-  } catch (e) {
-    console.error('Delete failed', e)
-  }
-}
-
+// เมื่อ component ถูก mount ให้ fetch ข้อมูลหมวดหมู่
 onMounted(fetchCategories)
 </script>
 
 <style scoped>
-/* ตาราง */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -225,7 +142,6 @@ td {
   color: #c00;
 }
 
-/* Modal overlay & box */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -254,7 +170,6 @@ td {
   margin-left: 0.5rem;
 }
 
-/* Toast */
 .toast-container {
   position: fixed;
   bottom: 1rem;
