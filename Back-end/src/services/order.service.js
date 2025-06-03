@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 //สร้างคำสั่งซื้อจากตะกร้าของผู้ใช้
 const createOrder = async (userId, paymentMethod, shippingAddress, phone) => {
-  // ดึงตะกร้าพร้อมรายการสินค้าและข้อมูลสินค้า
+
   const cart = await prisma.cart.findUnique({
     where: { userId },
     include: {
@@ -14,19 +14,18 @@ const createOrder = async (userId, paymentMethod, shippingAddress, phone) => {
     throw new Error("Cart is empty");
   }
 
-  // ตรวจ stock และคำนวณยอดรวม
+
   let totalAmount = 0;
-  cart.items.forEach((item) => {
+  for (const item of cart.items) {
     if (item.quantity > item.product.stock) {
       throw new Error(`Insufficient stock for product ${item.product.name}`);
     }
     totalAmount += item.quantity * item.product.price;
-  });
+  }
 
-  // ทำทุกอย่างใน transaction เดียวกัน
   const initialStatus = paymentMethod === "COD" ? "CONFIRMED" : "PENDING";
   const result = await prisma.$transaction(async (tx) => {
-    // สร้าง order หลัก
+
     const order = await tx.order.create({
       data: {
         userId,
@@ -38,7 +37,7 @@ const createOrder = async (userId, paymentMethod, shippingAddress, phone) => {
       },
     });
 
-    // สร้าง orderItems
+
     const orderItemsData = cart.items.map((item) => ({
       orderId: order.id,
       productId: item.productId,
@@ -47,7 +46,6 @@ const createOrder = async (userId, paymentMethod, shippingAddress, phone) => {
     }));
     await tx.orderItem.createMany({ data: orderItemsData });
 
-    // อัปเดต stock ของสินค้าแต่ละชิ้น
     for (const item of cart.items) {
       await tx.product.update({
         where: { id: item.productId },
@@ -55,14 +53,16 @@ const createOrder = async (userId, paymentMethod, shippingAddress, phone) => {
       });
     }
 
-    // เคลียร์ตะกร้า
     await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
 
-    // คืนข้อมูล order พร้อมรายการย่อย
+
     return tx.order.findUnique({
       where: { id: order.id },
       include: {
         items: { include: { product: true } },
+        user: {
+          select: { firstName: true, lastName: true, email: true },
+        },
       },
     });
   });
@@ -80,7 +80,6 @@ const getOrdersByUser = async (userId) => {
   });
 };
 
-//ดึงรายละเอียดคำสั่งซื้อใบเดียว (ตรวจ userId ด้วย)
 const getOrderById = async (userId, orderId) => {
   return prisma.order.findFirst({
     where: { id: Number(orderId), userId },
@@ -91,17 +90,15 @@ const getOrderById = async (userId, orderId) => {
 };
 
 const updateOrderStatus = async (userId, orderId, newStatus) => {
-  
-  // 1. ถ้าเป็นยกเลิก (CANCELLED) ให้คืน stock ก่อน
+
   if (newStatus === "CANCELLED") {
-    // ดึง order พร้อม items
+
     const order = await prisma.order.findUnique({
       where: { id: Number(orderId) },
       include: { items: true },
     });
     if (!order) throw new Error("Order not found");
 
-    // ทำ transaction: คืน stock แล้วอัพเดตสถานะ
     return await prisma.$transaction(async (tx) => {
       for (const item of order.items) {
         await tx.product.update({
@@ -117,7 +114,6 @@ const updateOrderStatus = async (userId, orderId, newStatus) => {
     });
   }
 
-  // กรณีอื่นๆ แค่เปลี่ยนสถานะตามปกติ
   return prisma.order.update({
     where: { id: Number(orderId) },
     data: { status: newStatus },

@@ -30,8 +30,7 @@
             {{order.items.reduce((s, i) => s + i.product.price * i.quantity, 0).toFixed(2)}}
         </p>
 
-        <div v-if="user.role === 'ADMIN'">
-            <!-- <h3>เปลี่ยนสถานะ (Admin)</h3> -->
+        <div v-if="user.role === 'ADMIN'||'USER'">
             <button @click="onUpdateStatus('CANCELLED')" :disabled="order.status !== 'CONFIRMED'">
                 ยกเลิก (Cancel)
             </button>

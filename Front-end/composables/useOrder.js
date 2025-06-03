@@ -28,7 +28,7 @@ export function useOrder() {
     current.value = await $api(`/orders/${id}`);
   };
 
-  // เปลี่ยนสถานะ (ADMIN only)
+  // เปลี่ยนสถานะ
   const updateStatus = async (id, status) => {
     await $api(`/orders/${id}/status`, {
       method: "PUT",
