@@ -1,4 +1,4 @@
-# Mini-Shop (Shopee Mini)
+# Mini-Shop
 
 A simple e-commerce application with a **Nuxt.js** frontend and **Hapi.js** backend, powered by **Prisma** ORM and **PostgreSQL**.
 
