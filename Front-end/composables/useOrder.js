@@ -7,14 +7,20 @@ export function useOrder() {
   const current = ref(null);
 
   // สร้าง Order (COD)
-  const createOrder = async ({ shippingAddress, phone }) => {
+  // const createOrder = async ({ shippingAddress, phone }) => {
+  //   return await $api("/orders", {
+  //     method: "POST",
+  //     body: {
+  //       paymentMethod: "COD",
+  //       shippingAddress,
+  //       phone,
+  //     },
+  //   });
+  // };
+  const createOrder = async (payload) => {
     return await $api("/orders", {
       method: "POST",
-      body: {
-        paymentMethod: "COD", 
-        shippingAddress, 
-        phone,
-      },
+      body: payload,
     });
   };
 

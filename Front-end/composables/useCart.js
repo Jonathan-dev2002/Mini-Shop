@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useNuxtApp, useState } from '#app'
 
 export function useCart() {
