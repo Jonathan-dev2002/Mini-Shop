@@ -1,4 +1,3 @@
-// Front-end/composables/useUser.js
 import { ref, computed } from 'vue'
 import { useNuxtApp } from '#app'
 

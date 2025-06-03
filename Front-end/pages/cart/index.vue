@@ -15,11 +15,13 @@
             <tbody>
                 <tr v-for="it in items" :key="it.id">
                     <td>{{ it.product.name }}</td>
-                    <td>฿{{ it.product.price }}</td>
+                    <td>฿{{ (it.product.price * 1).toFixed(2) }}</td>
                     <td>
                         <button @click="updateItem(it.id, it.quantity - 1)" :disabled="it.quantity <= 1">−</button>
                         {{ it.quantity }}
-                        <button @click="updateItem(it.id, it.quantity + 1)">＋</button>
+                        <button @click="updateItem(it.id, it.quantity + 1)"
+                            :disabled="it.quantity >= it.product.stock">＋</button>
+                        <!-- <div class="stock-info">Stock: {{ it.product.stock }}</div> -->
                     </td>
                     <td>฿{{ (it.product.price * it.quantity).toFixed(2) }}</td>
                     <td>
@@ -43,6 +45,8 @@ import { onMounted, computed } from 'vue'
 import { useCart } from '@/composables/useCart'
 
 const { items, fetchCart, updateItem, removeItem } = useCart()
+
+definePageMeta({ middleware: 'auth' })
 
 onMounted(fetchCart)
 

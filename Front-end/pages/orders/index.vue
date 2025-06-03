@@ -31,6 +31,8 @@
 import { onMounted } from 'vue'
 import { useOrder } from '~/composables/useOrder'
 
+definePageMeta({ middleware: 'auth' })
+
 const { orders, fetchOrders } = useOrder()
 onMounted(fetchOrders)
 </script>

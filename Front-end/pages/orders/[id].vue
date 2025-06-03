@@ -55,6 +55,8 @@ const route = useRoute()
 const { current: order, fetchOrder, updateStatus } = useOrder()
 const { user } = useAuth()
 
+definePageMeta({ middleware: 'auth' })
+
 onMounted(() => {
     fetchOrder(route.params.id)
 })

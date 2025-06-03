@@ -60,6 +60,8 @@ const {
     onSubmitOrder,
 } = useCheckout();
 
+definePageMeta({ middleware: 'auth' })
+
 onMounted(init);
 </script>
 

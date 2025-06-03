@@ -108,6 +108,8 @@ const {
   confirmDelete
 } = useCategory()
 
+definePageMeta({ middleware: 'auth' })
+
 // เมื่อ component ถูก mount ให้ fetch ข้อมูลหมวดหมู่
 onMounted(fetchCategories)
 </script>
