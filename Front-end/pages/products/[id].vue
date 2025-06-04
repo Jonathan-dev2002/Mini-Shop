@@ -124,6 +124,12 @@ const quantityOfThisProductInCart = computed(() => {
 });
 
 function handleAddToCart() {
+
+  const token = useCookie('token').value
+  if (!token) {
+    return navigateTo('/login')
+  }
+
   if (!product.value || !product.value.id) return;
 
   const currentStock = product.value.stock;
