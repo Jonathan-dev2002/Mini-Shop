@@ -15,7 +15,7 @@
     </div>
     <div class="container">
         <div v-for="product in data">
-            <NuxtLink :to="`/products/${product.id}`" class="box">
+            <div class="box">
                 <h2>Name: {{ product.name }}</h2>
                 <ul>
                     <li>Des: {{ product.description }}</li>
@@ -24,8 +24,10 @@
                     <li>Category: {{ product.category.name }}</li>
 
                 </ul>
-            </NuxtLink>
-
+                <button @click="onAddToCart(product.id)" class="btn-add-cart">
+                    🛒 เพิ่มลงตะกร้า
+                </button>
+            </div>
         </div>
     </div>
 </template>
@@ -41,7 +43,7 @@ const { data: data } = await useFetch('http://localhost:3000/products')
 const { addItem } = useCart()
 
 const onAddToCart = (productId) => {
-    addItem(productId.toString(), 1)
+    addItem(productId.toString(),1)
 }
 // definePageMeta({ middleware: 'auth' })
 </script>
@@ -62,8 +64,6 @@ const onAddToCart = (productId) => {
     align-items: center;
     padding: 1em;
     width: 400px;
-    text-decoration: none;
-    color: black;
     background-color: rgb(231, 231, 231);
 }
 
