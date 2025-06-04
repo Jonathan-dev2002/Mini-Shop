@@ -1,18 +1,18 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcssVite from "@tailwindcss/vite";
+
 export default defineNuxtConfig({
-  compatibilityDate: '2025-05-15',
+  compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
-  runtimeConfig:{
-    public:{
-      apiBase: 'http://localhost:3000'
-    }
+  runtimeConfig: {
+    public: {
+      apiBase: "http://localhost:3000",
+    },
   },
   devServer: {
     port: 3001,
   },
-  plugins: [
-    '~/plugins/api.client.js'
-  ],
+  plugins: ["~/plugins/api.client.js"],
   app: {
     head: {
       // update Nuxt defaults
@@ -22,4 +22,13 @@ export default defineNuxtConfig({
       viewport: "width=device-width, initial-scale=1, maximum-scale=1",
     },
   },
+  vite: {
+    plugins: [
+      tailwindcssVite(),
+    ],
+  },
+
+  css: [
+    "~/assets/css/input.css",
+  ],
 });
