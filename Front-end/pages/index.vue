@@ -48,23 +48,10 @@
 import { ref, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useCart } from '~/composables/useCart'
-// สมมติว่าคุณมี useCategory composable สำหรับดึง categories
-// import { useCategory } from '~/composables/useCategory'
 
 const { token, user } = useAuth()
-
-// --- ดึงข้อมูลสินค้าทั้งหมด (เหมือนเดิม) ---
-// หมายเหตุ: เปลี่ยนชื่อ data ที่ได้จาก useFetch เป็นชื่อที่สื่อความหมายมากขึ้น เช่น allProducts
 const { data: allProducts, pending: productsPending, error: productsError } = await useFetch('http://localhost:3000/products')
 
-// --- ดึงข้อมูลหมวดหมู่ ---
-// หากคุณมี useCategory composable:
-// const { categories, isLoading: categoryLoading, loadError: categoryError, fetchCategories } = useCategory()
-// onMounted(async () => {
-//   await fetchCategories()
-// })
-
-// หรือถ้าไม่มี useCategory composable หรือต้องการ fetch โดยตรง:
 const categories = ref([])
 const categoryLoading = ref(false)
 const categoryError = ref(null)
@@ -73,9 +60,8 @@ async function fetchCategoriesData() {
     categoryLoading.value = true
     categoryError.value = null
     try {
-        // ใช้ $api plugin ที่คุณสร้างไว้ ถ้ามี หรือ $fetch โดยตรง
         const nuxtApp = useNuxtApp()
-        categories.value = await nuxtApp.$api('/categorys') // หรือ $fetch('http://localhost:3000/categorys')
+        categories.value = await nuxtApp.$api('/categorys')
     } catch (e) {
         console.error('Failed to fetch categories:', e)
         categoryError.value = e
@@ -85,15 +71,7 @@ async function fetchCategoriesData() {
 }
 
 onMounted(async () => {
-    // ถ้าใช้ useCategory ก็ไม่จำเป็นต้องเรียก fetchCategoriesData() ที่นี่อีก
-    // แต่ถ้า fetch โดยตรง ให้เรียกฟังก์ชันนี้
     await fetchCategoriesData()
-
-    // ส่วนของ useCart (ถ้ายังต้องการ)
-    // const { addItem } = useCart()
-    // const onAddToCart = (productId) => {
-    //     addItem(productId.toString(), 1)
-    // }
 })
 
 // definePageMeta({ middleware: 'auth' }) // ถ้าหน้าแรกไม่จำเป็นต้อง login ให้เอาออก
@@ -104,7 +82,6 @@ onMounted(async () => {
     margin: 20px auto;
     padding: 15px;
     max-width: 1200px;
-    /* หรือตามความเหมาะสม */
     text-align: center;
 }
 

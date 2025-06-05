@@ -20,9 +20,9 @@
                         <p>ราคา: ฿{{ product.price.toFixed(2) }}</p>
                         <p>คงเหลือ: {{ product.stock }}</p>
                         </NuxtLink>
-                     <button @click="handleAddToCart(product)" class="btn-add-to-cart" :disabled="product.stock <= 0">
+                     <!-- <button @click="handleAddToCart(product)" class="btn-add-to-cart" :disabled="product.stock <= 0">
                         🛒 เพิ่มลงตะกร้า
-                    </button>
+                    </button> -->
                 </div>
             </div>
             <div v-else>
@@ -36,34 +36,25 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useCart } from '~/composables/useCart' // ถ้าต้องการใช้ปุ่ม Add to cart
+import { useCart } from '~/composables/useCart'
 
 const route = useRoute()
 const categoryId = route.params.id
-const nuxtApp = useNuxtApp() // สำหรับการใช้ $api
+const nuxtApp = useNuxtApp() 
 
-// 1. ดึงข้อมูลของหมวดหมู่ปัจจุบัน (เพื่อให้รู้ชื่อหมวดหมู่)
+
 const { data: categoryData, pending: pendingCategory, error: categoryError } = await useAsyncData(
     `category-${categoryId}`,
-    () => nuxtApp.$api(`/categorys/${categoryId}`) // ใช้ $api หรือ $fetch
-    // () => $fetch(`http://localhost:3000/categorys/${categoryId}`)
+    () => nuxtApp.$api(`/categorys/${categoryId}`) 
 )
 
-// 2. ดึงข้อมูลสินค้าที่อยู่ในหมวดหมู่นี้
-// !!! Backend API Endpoint ที่สำคัญ !!!
-// คุณจะต้องมี API สำหรับดึงสินค้าตาม categoryId
-// ตัวอย่าง: GET http://localhost:3000/products?categoryId=[ID]
-// หรือ GET http://localhost:3000/categorys/[ID]/products
 const { data: productsData, pending: pendingProducts, error: productsError } = await useAsyncData(
     `products-in-category-${categoryId}`,
-    () => nuxtApp.$api(`/products?categoryId=${categoryId}`) // << --- ปรับ endpoint นี้ให้ตรงกับ backend ของคุณ
-    // () => $fetch(`http://localhost:3000/products?categoryId=${categoryId}`) // ตัวอย่างการใช้ $fetch โดยตรง
-    // หรือถ้า backend return สินค้ามาพร้อมกับ category data ตอน fetch category (ไม่แนะนำสำหรับ REST)
-    // ก็สามารถใช้ categoryData.value.products ได้เลย (ถ้ามี)
+    () => nuxtApp.$api(`/products?categoryId=${categoryId}`)
+    
 )
 
-// ส่วนของการเพิ่มสินค้าลงตะกร้า (ถ้าต้องการ)
-const { addItem, items: cartItems } = useCart() // สมมติว่า fetchCart ถูกเรียกใน layout หรือ onMounted ที่อื่นแล้ว
+const { addItem, items: cartItems } = useCart() 
 
 const handleAddToCart = (product) => {
     const token = useCookie('token').value
@@ -71,20 +62,15 @@ const handleAddToCart = (product) => {
         return navigateTo('/login')
     }
     if (product && product.id) {
-        // อาจจะมีการตรวจสอบ stock หรือ quantity ที่ซับซ้อนกว่านี้เหมือนในหน้า product/[id].vue
         addItem(product.id.toString(), 1)
-        // อาจจะมี toast notification
         alert(`${product.name} ถูกเพิ่มลงในตะกร้าแล้ว!`)
     }
 }
 
-// ป้องกันการเข้าถึงหน้านี้หากไม่มี categoryId (อาจจะไม่จำเป็นถ้า routing จัดการดีแล้ว)
+
 if (!categoryId) {
-    // หรือ navigateTo('/') หรือแสดงข้อความ error
     console.warn('Category ID not found in route params.')
 }
-
-// ถ้าต้องการให้หน้านี้มีการ authentication
 // definePageMeta({ middleware: 'auth' })
 </script>
 

@@ -14,6 +14,7 @@ const Boom = require("@hapi/boom");
 const getAllCategory = {
   description: "Get list all category",
   tags: ["api", "category"],
+  auth: false,
   handler: async (request, h) => {
     try {
       const AllCategory = await categoryService.getAllCategory();
@@ -27,6 +28,7 @@ const getAllCategory = {
 const getCategoryById = {
   description: "Get category by id",
   tags: ["api", "category"],
+  auth: false,
   validate: {
     params: validateZod(idParamSchema),
   },
@@ -55,24 +57,24 @@ const createCategory = {
       parse: true,
       multipart: true,
       allow: "multipart/form-data",
-      maxBytes: 5 * 1024 * 1024, // 5MB
+      maxBytes: 5 * 1024 * 1024,
     },
     validate: {
       payload: validateZod(createCategorySchema.passthrough()),
     },
     handler: async (request, h) => {
       try {
-        const { name } = request.payload; // name จะถูก validate โดย Zod
-        const imageFile = request.payload.image; // 'image' คือชื่อ field ที่ส่งมาจาก form-data
+        const { name } = request.payload;
+        const imageFile = request.payload.image;
         let categoryData = { name };
 
         if (imageFile && imageFile.hapi && imageFile.hapi.filename) {
-          // ตรวจสอบว่ามีไฟล์ส่งมาจริง
+
           console.log("Uploading category image to Cloudinary...");
           const result = await uploadToCloudinary(
             imageFile,
             "my_app/categories"
-          ); // 'my_app/categories' คือชื่อโฟลเดอร์
+          );
           categoryData.imageUrl = result.url;
           categoryData.imagePublicId = result.public_id;
           console.log("Upload successful:", result.url);
@@ -121,7 +123,7 @@ const updateCategory = {
       }
 
       if (imageFile && imageFile.hapi && imageFile.hapi.filename) {
-        // ถ้ามีรูปเก่า ให้ลบออกจาก Cloudinary ก่อน (ถ้ามีการเก็บ public_id)
+
         if (existingCategory.imagePublicId) {
           console.log(`Deleting old image: ${existingCategory.imagePublicId}`);
           try {
@@ -131,7 +133,6 @@ const updateCategory = {
               "Failed to delete old image from Cloudinary, proceeding with upload:",
               deleteError
             );
-            // อาจจะ log error แต่ยังคงดำเนินการอัปโหลดรูปใหม่
           }
         }
         console.log("Uploading new category image to Cloudinary...");
@@ -142,7 +143,7 @@ const updateCategory = {
       }
 
       if (Object.keys(updateData).length === 0) {
-        return h.response(existingCategory).code(200); // ไม่มีอะไรให้อัปเดต
+        return h.response(existingCategory).code(200);
       }
 
       const updatedCategory = await categoryService.updateCategory(
@@ -172,7 +173,6 @@ const deleteCategory = {
         return Boom.notFound("Category not found");
       }
 
-      // ลบรูปภาพจาก Cloudinary ถ้ามี
       if (categoryToDelete.imagePublicId) {
         console.log(
           `Deleting image from Cloudinary: ${categoryToDelete.imagePublicId}`
@@ -184,11 +184,11 @@ const deleteCategory = {
             "Failed to delete image from Cloudinary, proceeding with DB deletion:",
             deleteError
           );
-          // อาจจะ log error แต่ยังคงดำเนินการลบจาก DB
+
         }
       }
 
-      await categoryService.deleteCategory(id); // ลบ category จาก database
+      await categoryService.deleteCategory(id);
       return h.response({ message: "Category deleted successfully" }).code(200);
     } catch (error) {
       console.error("Error deleting category:", error);
