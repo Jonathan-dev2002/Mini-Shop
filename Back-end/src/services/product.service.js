@@ -1,9 +1,26 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-const getAllProducts = async () => {
+const getAllProducts = async (categoryId) => {
+  const whereClause = {};
+
+  if (categoryId) {
+    const numericCategoryId = Number(categoryId);
+    if (!isNaN(numericCategoryId)) {
+      whereClause.categoryId = numericCategoryId;
+    } else {
+      console.warn(
+        `Invalid categoryId format: ${categoryId}. Fetching all products.`
+      );
+    }
+  }
+
   return await prisma.product.findMany({
+    where: whereClause,
     include: { category: true },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 };
 

@@ -12,7 +12,9 @@ const getAllProduct = {
   auth: false,
   handler: async (request, h) => {
     try {
-      const product = await productService.getAllProducts();
+      const { categoryId } = request.query;
+
+      const product = await productService.getAllProducts(categoryId);
       return h.response(product).code(200);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -23,7 +25,7 @@ const getAllProduct = {
 
 const getProductById = {
   description: "Get product by Id",
-  tags: ["api","product"],
+  tags: ["api", "product"],
   validate: {
     params: validateZod(idParamSchema),
   },
@@ -64,7 +66,7 @@ const createProduct = {
 
 const updateProduct = {
   description: "update product",
-  tags: ["api","product"],
+  tags: ["api", "product"],
   validate: {
     params: validateZod(idParamSchema),
     payload: validateZod(updateProductSchema),
@@ -86,7 +88,7 @@ const updateProduct = {
 
 const deleteProduct = {
   description: "delete Product",
-  tags: ["api","product"],
+  tags: ["api", "product"],
   validate: {
     params: validateZod(idParamSchema),
   },
