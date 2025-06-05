@@ -32,6 +32,10 @@
         <div v-else-if="productsError || !allProducts">ไม่พบสินค้า</div>
         <div v-else v-for="product in allProducts" :key="product.id">
             <NuxtLink :to="`/products/${product.id}`" class="box">
+                <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="product-image" />
+                <div v-else class="no-image-placeholder">
+                    ไม่มีรูปภาพ
+                </div>
                 <h2>Name: {{ product.name }}</h2>
                 <ul>
                     <li>Des: {{ product.description }}</li>

@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { useNuxtApp } from "#app";
 
 export function useCategory() {
@@ -15,6 +15,9 @@ export function useCategory() {
   const showDeleteModal = ref(false);
 
   const modalName = ref("");
+  const modalFile = ref(null);
+  const modalFilePreview = ref(null);
+  const currentEditCategoryImageUrl = ref(null);
   const editId = ref(null);
   const deleteId = ref(null);
 
@@ -42,6 +45,24 @@ export function useCategory() {
     }
   }
 
+  function resetModalForm() {
+    modalName.value = "";
+    modalFile.value = null;
+    modalFilePreview.value = null;
+    currentEditCategoryImageUrl.value = null;
+  }
+
+  function handleFileChange(event) {
+    const file = event.target.files[0];
+    if (file) {
+      modalFile.value = file;
+      
+      modalFilePreview.value = URL.createObjectURL(file);
+    } else {
+      modalFile.value = null;
+      modalFilePreview.value = null;
+    }
+  }
   // async function fetchCategories() {
   //   try {
   //     cateList.value = await $api("/categorys");
@@ -60,44 +81,79 @@ export function useCategory() {
     showCreateModal.value = false;
   }
   async function confirmCreate() {
-    if (!modalName.value.trim()) return;
+    if (!modalName.value.trim()) {
+      pushToast("Please enter category name.");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("name", modalName.value.trim());
+    if (modalFile.value) {
+      formData.append("image", modalFile.value);
+    }
+
     try {
+      isLoading.value = true;
       await $api("/categorys", {
         method: "POST",
-        body: { name: modalName.value.trim() },
+        body: formData,
       });
       closeCreateModal();
       await fetchCategories();
       pushToast("Category created!");
     } catch (e) {
       console.error("confirmCreate failed", e);
-      pushToast("Create failed");
+      let errorMessage = "Create failed";
+      if (e.data && e.data.message) {
+        errorMessage += `: ${e.data.message}`;
+      }
+      pushToast(errorMessage);
+    } finally {
+      isLoading.value = false;
     }
   }
 
   // --- Edit ---
   function openEditModal(cat) {
+    resetModalForm();
     editId.value = cat.id;
     modalName.value = cat.name;
+    currentEditCategoryImageUrl.value = cat.imageUrl;
     showEditModal.value = true;
   }
   function closeEditModal() {
     showEditModal.value = false;
+    resetModalForm();
     editId.value = null;
   }
   async function confirmEdit() {
-    if (!modalName.value.trim()) return;
+    if (!modalName.value.trim() && !modalFile.value) {
+      pushToast("No changes detected.");
+      closeEditModal();
+      return;
+    }
+    const formData = new FormData();
+    formData.append("name", modalName.value.trim());
+    if (modalFile.value) {
+      formData.append("image", modalFile.value);
+    }
     try {
+      isLoading.value = true;
       await $api(`/categorys/${editId.value}`, {
         method: "PUT",
-        body: { name: modalName.value.trim() },
+        body: formData,
       });
       closeEditModal();
       await fetchCategories();
       pushToast("Category updated!");
     } catch (e) {
       console.error("confirmEdit failed", e);
-      pushToast("Update failed");
+      let errorMessage = "Update failed";
+      if (e.data && e.data.message) {
+        errorMessage += `: ${e.data.message}`;
+      }
+      pushToast(errorMessage);
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -134,6 +190,9 @@ export function useCategory() {
     showEditModal,
     showDeleteModal,
     modalName,
+    modalFile,
+    modalFilePreview,
+    currentEditCategoryImageUrl,
     // IDs
     editId,
     deleteId,
@@ -150,5 +209,6 @@ export function useCategory() {
     openDeleteModal,
     closeDeleteModal,
     confirmDelete,
+    handleFileChange,
   };
 }
