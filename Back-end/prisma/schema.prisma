@@ -75,6 +75,8 @@ model Product {
   stock       Int         @default(0)
   category    Category    @relation(fields: [categoryId], references: [id])
   categoryId  Int
+  imageUrl      String?
+  imagePublicId String?
   cartItems   CartItem[]
   orderItems  OrderItem[]
   createdAt   DateTime    @default(now())

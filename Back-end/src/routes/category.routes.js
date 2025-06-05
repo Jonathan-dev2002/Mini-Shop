@@ -16,7 +16,7 @@ module.exports = [
     method: "POST",
     path: "/categorys",
     options: {
-      ...categoryController.createCategory,
+      ...categoryController.createCategory.options,
       pre: [{ method: requireAdmin }],
     },
   },

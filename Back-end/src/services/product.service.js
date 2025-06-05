@@ -38,19 +38,24 @@ const createProduct = async (data) => {
     price: data.price,
     stock: data.stock ?? 0,
     categoryId: Number(data.categoryId),
+    imageUrl: data.imageUrl,
+    imagePublicId: data.imagePublicId,
   };
   return await prisma.product.create({ data: payload });
 };
 
 const updateProduct = async (id, data) => {
-  const payload = {};
-
-  if (data.name !== undefined) payload.name = data.name;
-  if (data.description !== undefined) payload.description = data.description;
-  if (data.price !== undefined) payload.price = data.price;
-  if (data.stock !== undefined) payload.stock = data.stock;
-  if (data.categoryId !== undefined)
+  const payload = { ...data };
+  if (data.categoryId !== undefined) {
     payload.categoryId = Number(data.categoryId);
+  }
+
+  // if (data.name !== undefined) payload.name = data.name;
+  // if (data.description !== undefined) payload.description = data.description;
+  // if (data.price !== undefined) payload.price = data.price;
+  // if (data.stock !== undefined) payload.stock = data.stock;
+  // if (data.categoryId !== undefined)
+  //   payload.categoryId = Number(data.categoryId);
 
   return await prisma.product.update({
     where: { id: Number(id) },
