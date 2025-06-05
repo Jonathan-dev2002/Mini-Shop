@@ -1,155 +1,207 @@
-import { ref } from 'vue'
-import { useNuxtApp } from '#app'
+import { ref } from "vue";
+import { useNuxtApp } from "#app";
 
 export function useProduct() {
-  const { $api } = useNuxtApp()
+  const { $api } = useNuxtApp();
 
   // state ของสินค้า
-  const products   = ref([])
-  const isLoading  = ref(false)
-  const loadError  = ref(false)
+  const products = ref([]);
+  const isLoading = ref(false);
+  const loadError = ref(false);
 
   // modal states สำหรับ Create/Edit/Delete
-  const showCreateModal = ref(false)
-  const showEditModal   = ref(false)
-  const showDeleteModal = ref(false)
+  const showCreateModal = ref(false);
+  const showEditModal = ref(false);
+  const showDeleteModal = ref(false);
 
   // ฟิลด์ใน modal (Create/Edit)
-  const modalName        = ref('')
-  const modalDescription = ref('')
-  const modalPrice       = ref('')
-  const modalStock       = ref('')
-  const modalCate        = ref(null)
-  const editId           = ref(null)
-  const deleteId         = ref(null)
+  const modalName = ref("");
+  const modalDescription = ref("");
+  const modalPrice = ref("");
+  const modalStock = ref("");
+  const modalCate = ref(null);
+  const modalFile = ref(null);
+  const modalFilePreview = ref(null);
+  const currentEditProductImageUrl = ref(null);
+  const editId = ref(null);
+  const deleteId = ref(null);
 
   // toast
-  const toasts = ref([])
+  const toasts = ref([]);
   function pushToast(msg) {
-    toasts.value.push(msg)
+    toasts.value.push(msg);
     setTimeout(() => {
-      toasts.value.shift()
-    }, 3000)
+      toasts.value.shift();
+    }, 3000);
+  }
+
+  function handleProductFileChange(event) {
+    const file = event.target.files[0];
+    if (file) {
+      modalFile.value = file;
+      modalFilePreview.value = URL.createObjectURL(file);
+    } else {
+      modalFile.value = null;
+      modalFilePreview.value = null;
+    }
+  }
+
+  function resetProductModalForm() {
+    modalName.value = "";
+    modalDescription.value = "";
+    modalPrice.value = "";
+    modalStock.value = "";
+    modalCate.value = null;
+    modalFile.value = null;
+    modalFilePreview.value = null;
+    currentEditProductImageUrl.value = null;
   }
 
   // --- Fetch สินค้าทั้งหมด ---
   async function fetchProducts() {
-    isLoading.value = true
-    loadError.value  = false
+    isLoading.value = true;
+    loadError.value = false;
     try {
-      products.value = await $api('/products')
+      products.value = await $api("/products");
     } catch (e) {
-      console.error('fetchProducts failed', e)
-      loadError.value = true
+      console.error("fetchProducts failed", e);
+      loadError.value = true;
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 
   // --- Create สินค้าใหม่ ---
   function openCreateModal() {
-    modalName.value        = ''
-    modalDescription.value = ''
-    modalPrice.value       = ''
-    modalStock.value       = ''
-    modalCate.value        = null
-    showCreateModal.value  = true
+    resetProductModalForm();
+    showCreateModal.value = true;
   }
   function closeCreateModal() {
-    showCreateModal.value = false
+    showCreateModal.value = false;
+    resetProductModalForm();
   }
+
   async function confirmCreate() {
-    // ตรวจสอบค่าไม่ว่าง
     if (
       !modalName.value.trim() ||
       !modalDescription.value.trim() ||
-      !modalPrice.value ||
-      !modalStock.value ||
+      modalPrice.value === "" || // Check for empty string too
+      modalStock.value === "" || // Check for empty string too
       !modalCate.value
     ) {
-      return
+      pushToast("Please fill in all required fields.");
+      return;
     }
 
-    const payload = {
-      name:        modalName.value.trim(),
-      description: modalDescription.value.trim(),
-      price:       Number(modalPrice.value),
-      stock:       Number(modalStock.value),
-      categoryId:  modalCate.value.toString().trim()
+    const formData = new FormData();
+    formData.append("name", modalName.value.trim());
+    formData.append("description", modalDescription.value.trim());
+    formData.append("price", Number(modalPrice.value));
+    formData.append("stock", Number(modalStock.value));
+    formData.append("categoryId", modalCate.value.toString()); // categoryId ควรเป็น string หรือ number ตามที่ backend รับ
+    if (modalFile.value) {
+      formData.append("image", modalFile.value);
     }
 
     try {
-      await $api('/products', {
-        method: 'POST',
-        body: payload
-      })
-      closeCreateModal()
-      await fetchProducts()
-      pushToast('Product created!')
+      isLoading.value = true;
+      await $api("/products", {
+        method: "POST",
+        body: formData, // ส่ง FormData
+      });
+      closeCreateModal();
+      await fetchProducts();
+      pushToast("Product created!");
     } catch (e) {
-      console.error('confirmCreate failed', e)
-      pushToast('Create failed')
+      console.error("confirmCreate product failed", e);
+      pushToast(
+        `Create product failed: ${
+          e.data?.message || e.message || "Unknown error"
+        }`
+      );
+    } finally {
+      isLoading.value = false;
     }
   }
 
   // --- Edit สินค้า ---
   function openEditModal(item) {
-    editId.value           = item.id
-    modalName.value        = item.name
-    modalDescription.value = item.description
-    modalPrice.value       = item.price
-    modalStock.value       = item.stock
-    modalCate.value        = item.category.id
-    showEditModal.value    = true
+    resetProductModalForm();
+    editId.value = item.id;
+    modalName.value = item.name;
+    modalDescription.value = item.description;
+    modalPrice.value = item.price;
+    modalStock.value = item.stock;
+    modalCate.value = item.category?.id || item.categoryId;
+    currentEditProductImageUrl.value = item.imageUrl;
+    showEditModal.value = true;
   }
   function closeEditModal() {
-    showEditModal.value = false
-    editId.value        = null
+    showEditModal.value = false;
+    resetProductModalForm();
+    editId.value = null;
   }
   async function confirmEdit() {
-    const payload = {}
-    if (modalName.value.trim())        payload.name        = modalName.value.trim()
-    if (modalDescription.value.trim()) payload.description = modalDescription.value.trim()
-    if (modalPrice.value != null)      payload.price       = Number(modalPrice.value)
-    if (modalStock.value != null)      payload.stock       = Number(modalStock.value)
-    if (modalCate.value !== null)      payload.categoryId  = modalCate.value.toString()
+    const formData = new FormData();
 
-    if (!Object.keys(payload).length) return
+    formData.append("name", modalName.value.trim());
+    formData.append("description", modalDescription.value.trim());
+    formData.append("price", Number(modalPrice.value));
+    formData.append("stock", Number(modalStock.value));
+    if (modalCate.value) {
+      formData.append("categoryId", modalCate.value.toString());
+    }
+    if (modalFile.value) {
+      formData.append("image", modalFile.value);
+    }
+
+    if (formData.entries().next().done && !modalFile.value) {
+      pushToast("No changes to update.");
+      closeEditModal();
+      return;
+    }
 
     try {
+      isLoading.value = true;
       await $api(`/products/${editId.value}`, {
-        method: 'PUT',
-        body: payload
-      })
-      closeEditModal()
-      await fetchProducts()
-      pushToast('Product updated!')
+        method: "PUT",
+        body: formData,
+      });
+      closeEditModal();
+      await fetchProducts();
+      pushToast("Product updated!");
     } catch (e) {
-      console.error('confirmEdit failed', e)
-      pushToast('Update failed')
+      console.error("confirmEdit product failed", e);
+      pushToast(
+        `Update product failed: ${
+          e.data?.message || e.message || "Unknown error"
+        }`
+      );
+    } finally {
+      isLoading.value = false;
     }
   }
 
   // --- Delete สินค้า ---
   function openDeleteModal(id) {
-    deleteId.value        = id
-    showDeleteModal.value = true
+    deleteId.value = id;
+    showDeleteModal.value = true;
   }
   function closeDeleteModal() {
-    showDeleteModal.value = false
-    deleteId.value        = null
+    showDeleteModal.value = false;
+    deleteId.value = null;
   }
   async function confirmDelete() {
     try {
       await $api(`/products/${deleteId.value}`, {
-        method: 'DELETE'
-      })
-      closeDeleteModal()
-      await fetchProducts()
-      pushToast('Product deleted!')
+        method: "DELETE",
+      });
+      closeDeleteModal();
+      await fetchProducts();
+      pushToast("Product deleted!");
     } catch (e) {
-      console.error('confirmDelete failed', e)
-      pushToast('Delete failed')
+      console.error("confirmDelete failed", e);
+      pushToast("Delete failed");
     }
   }
 
@@ -166,6 +218,9 @@ export function useProduct() {
     modalPrice,
     modalStock,
     modalCate,
+    modalFile,
+    modalFilePreview,
+    currentEditProductImageUrl,
     editId,
     deleteId,
     toasts,
@@ -179,6 +234,7 @@ export function useProduct() {
     confirmEdit,
     openDeleteModal,
     closeDeleteModal,
-    confirmDelete
-  }
+    confirmDelete,
+    handleProductFileChange,
+  };
 }

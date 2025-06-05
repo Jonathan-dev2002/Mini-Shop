@@ -68,6 +68,7 @@
       </div>
     </div>
 
+    <!-- Edit Modal -->
     <div v-if="showEditModal" class="modal-overlay">
       <div class="modal">
         <h2>Edit Category (ID: {{ editId }})</h2>
