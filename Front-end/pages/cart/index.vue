@@ -1,21 +1,19 @@
 <template>
     <section class="h-[100vh]">
         <!-- Cart Header -->
-        <div class="max-w-6xl mx-auto px-6 py-5 border-b border-orange-700">
-            <div class="max-w-6xl mx-auto px-6">
-                <div class="flex items-center space-x-4 text-white">
-                    <div
-                        class="w-12 h-12 bg-gradient-to-r from-[#F53D2D]  to-[#FF6633] rounded-full flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+        <div class="max-w-6xl mx-auto px-6 py-5 border-b border-orange-200">
+            <div class="flex items-center space-x-4">
+                <div
+                    class="w-12 h-12 bg-gradient-to-r from-[#F53D2D] to-[#FF6633] rounded-full flex items-center justify-center text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
                         </svg>
-                    </div>
-                    <div>
-                        <h1 class="text-3xl font-bold text-orange-700">ตะกร้าสินค้าของคุณ</h1>
-                        <p class="text-orange-500 ">จัดการสินค้าที่คุณเลือกไว้</p>
-                    </div>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">ตะกร้าสินค้าของคุณ</h1>
+                    <p class="text-gray-500">จัดการสินค้าที่คุณเลือกไว้</p>
                 </div>
             </div>
         </div>
@@ -27,7 +25,8 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
                         <div class="p-6 border-b border-gray-200">
-                            <h2 class="text-xl font-bold text-gray-800">สินค้าในตะกร้า (<span id="total-items">{{ totalCount }}</span>
+                            <h2 class="text-xl font-bold text-gray-800">สินค้าในตะกร้า (<span id="total-items">{{
+                                    totalCount }}</span>
                                 รายการ)</h2>
                         </div>
 
@@ -119,10 +118,10 @@
                             </div>
                             <h3 class="text-xl font-semibold text-gray-800 mb-2">ตะกร้าของคุณว่างเปล่า</h3>
                             <p class="text-gray-500 mb-6">เริ่มช้อปปิ้งเพื่อเพิ่มสินค้าลงในตะกร้า</p>
-                            <button
+                            <NuxtLink to="/"
                                 class="bg-gradient-to-r from-[#F53D2D] to-[#FF6633] text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all duration-300">
                                 เริ่มช้อปปิ้ง
-                            </button>
+                            </NuxtLink>
                         </div>
                     </div>
                 </div>
@@ -159,7 +158,7 @@
                             <div class="flex justify-between items-center text-lg">
                                 <span class="font-bold text-gray-800">ยอดรวมทั้งสิ้น</span>
                                 <span class="font-bold text-orange-500 text-xl" id="total">฿{{ grandTotal.toFixed(2)
-                                    }}</span>
+                                }}</span>
                             </div>
 
                             <!-- Coupon Code -->
@@ -175,11 +174,17 @@
                                 </div>
                             </div>
 
-                            <!-- Checkout Button -->
-                            <NuxtLink to="/checkout" id="checkout-btn"
-                                class="w-full bg-gradient-to-r from-[#F53D2D] to-[#FF6633] text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] animate-pulse-custom">
-                                สั่งซื้อตอนนี้
-                            </NuxtLink>
+                            <!-- Checkout Button 
+                                animate-pulse-custom 
+                            -->
+                            <div class="w-full flex">
+                                <NuxtLink to="/checkout"
+                                    class="w-full  bg-gradient-to-r from-[#F53D2D] to-[#FF6633] text-white py-4   rounded-xl font-bold text-lg hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02]  text-center">
+                                    สั่งซื้อตอนนี้
+                                </NuxtLink>
+                            </div>
+                            
+
                         </div>
                     </div>
 
@@ -194,7 +199,7 @@
 import { onMounted, computed } from 'vue'
 import { useCart } from '@/composables/useCart'
 
-const { items, fetchCart, updateItem, removeItem,totalCount } = useCart()
+const { items, fetchCart, updateItem, removeItem, totalCount } = useCart()
 
 
 definePageMeta({ middleware: 'auth' })

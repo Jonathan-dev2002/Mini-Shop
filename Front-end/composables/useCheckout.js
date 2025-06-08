@@ -10,6 +10,8 @@ export function useCheckout() {
   const {
     addresses,
     defaultAddress,
+    isLoading: addrLoading,
+    loadError: addrError,
     fetchAddresses,
     createAddress,
     updateAddress,
@@ -48,7 +50,8 @@ export function useCheckout() {
 
   function openAddressModal() {
     showAddressModal.value = true;
-    tempSelectedAddressId.value = selectedAddressId.value || defaultAddress.value?.id || null;
+    tempSelectedAddressId.value =
+      selectedAddressId.value || defaultAddress.value?.id || null;
   }
   function closeAddressModal() {
     showAddressModal.value = false;
@@ -74,7 +77,10 @@ export function useCheckout() {
   }
   async function onSubmitOrder() {
     if (!selectedAddressId.value || !items.value.length) return;
-    await createOrder({ paymentMethod: "COD", selectedAddressId: selectedAddressId.value });
+    await createOrder({
+      paymentMethod: "COD",
+      selectedAddressId: selectedAddressId.value,
+    });
     clearCart();
     router.push("/orders");
   }
@@ -88,7 +94,9 @@ export function useCheckout() {
     showAddressModal,
     selectedAddressId,
     tempSelectedAddressId,
-
+    addrLoading,
+    addrError,
+    
     // loading/error (ถ้ามี)
     // isLoading, loadError  … (ถ้าต้องการ)
 
