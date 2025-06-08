@@ -1,4 +1,18 @@
 <template>
+    <!-- <div>
+        <template v-if="!token">
+            <h1>Please login</h1>
+        </template>
+<template v-else>
+            <h1 v-if="user?.role === 'ADMIN'">
+                Welcome Admin, {{ user.firstName }}!
+            </h1>
+            <h1 v-else-if="user?.role === 'USER'">
+                Welcome User, {{ user.firstName }}
+            </h1>
+        </template>
+</div> -->
+
     <div class="category-section">
         <h2>หมวดหมู่สินค้า</h2>
         <div v-if="categoryLoading">กำลังโหลดหมวดหมู่...</div>
@@ -13,6 +27,26 @@
     </div>
 
     <hr />
+    <!-- <div class="container">
+        <div v-if="productsPending">กำลังโหลดสินค้า...</div>
+        <div v-else-if="productsError || !allProducts">ไม่พบสินค้า</div>
+        <div v-else v-for="product in allProducts" :key="product.id">
+            <NuxtLink :to="`/products/${product.id}`" class="box">
+                <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="product-image" />
+                <div v-else class="no-image-placeholder">
+                    ไม่มีรูปภาพ
+                </div>
+                <h2>Name: {{ product.name }}</h2>
+                <ul>
+                    <li>Des: {{ product.description }}</li>
+                    <li>Price: {{ product.price }}</li>
+                    <li>Stock: {{ product.stock }}</li>
+                    <li v-if="product.category">Category: {{ product.category.name }}</li>
+                </ul>
+            </NuxtLink>
+        </div>
+    </div> -->
+
     <!-- Featured Products -->
     <section class="bg-gray-50 py-12">
         <div class="max-w-7xl mx-auto px-6">
@@ -22,12 +56,12 @@
             </div>
             <div v-if="productsPending">กำลังโหลดสินค้า...</div>
             <div v-else-if="productsError || !allProducts">ไม่พบสินค้า</div>
-            <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div v-else v-for="product in allProducts" :key="product.id"
+                class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 
-                <!-- Product Card -->
-                <NuxtLink v-for="product in allProducts" :key="product.id" :to="`/products/${product.id}`"
-                    class="block bg-white rounded-2xl shadow-sm card-hover overflow-hidden group cursor-pointer">
-
+                <!-- Product Card 0 -->
+                <NuxtLink :to="`/products/${product.id}`"
+                    class="bg-white rounded-2xl shadow-sm card-hover overflow-hidden group cursor-pointer">
                     <div class="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 relative overflow-hidden">
                         <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name"
                             class="w-full h-full object-cover">
@@ -41,6 +75,11 @@
                         </h3>
                         <div class="flex items-center space-x-2 mb-2">
                             <span class="text-orange-500 font-bold">฿{{ product.price }}</span>
+                            <!-- <span class="text-gray-400 text-sm line-through">฿580</span> -->
+                        </div>
+                        <div class="flex items-center text-yellow-400 text-xs">
+                            <span>★★★★★</span>
+                            <span class="text-gray-500 ml-1">(128ๅ)</span>
                         </div>
                     </div>
                 </NuxtLink>
@@ -57,28 +96,11 @@ import { useCart } from '~/composables/useCart'
 
 
 const { token, user } = useAuth()
-
-const allProducts = ref([])
-const productsPending = ref(false)
-const productsError = ref(null)
+const { data: allProducts, pending: productsPending, error: productsError } = await useFetch('http://localhost:3000/products')
 
 const categories = ref([])
 const categoryLoading = ref(false)
 const categoryError = ref(null)
-
-async function fetchProductsData() {
-    productsPending.value = true
-    productsError.value = null
-    try {
-        const nuxtApp = useNuxtApp()
-        allProducts.value = await nuxtApp.$api('/products')
-    } catch (e) {
-        console.error('Failed to fetch products:', e)
-        productsError.value = e
-    } finally {
-        productsPending.value = false
-    }
-}
 
 async function fetchCategoriesData() {
     categoryLoading.value = true
@@ -95,10 +117,7 @@ async function fetchCategoriesData() {
 }
 
 onMounted(async () => {
-    await Promise.all([
-        fetchProductsData(),
-        fetchCategoriesData()
-    ])
+    await fetchCategoriesData()
 })
 
 // definePageMeta({ middleware: 'auth' }) // ถ้าหน้าแรกไม่จำเป็นต้อง login ให้เอาออก

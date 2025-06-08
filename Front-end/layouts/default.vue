@@ -99,7 +99,7 @@
                   <span class="text-sm font-medium">บัญชีของฉัน</span>
                 </a>
 
-                <NuxtLink to ="/orders"
+                <NuxtLink to="/orders"
                   class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-5 h-5 mr-3 text-gray-500">
@@ -188,7 +188,7 @@
                   <span class="text-sm font-medium">บัญชีของฉัน</span>
                 </a>
 
-                <NuxtLink to ="/orders"
+                <NuxtLink to="/orders"
                   class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-5 h-5 mr-3 text-gray-500">
@@ -220,13 +220,18 @@
     <main>
       <NuxtPage />
     </main>
+    <Footer />
+
   </div>
+
 </template>
+
 
 <script setup>
 import { useAuth } from '~/composables/useAuth'
 import { useCart } from '~/composables/useCart'
 import { onMounted, watch } from 'vue'
+import Footer from "~/components/Footer.vue";
 
 const { token, user, logout } = useAuth()
 const { totalCount, fetchCart, clearCart } = useCart()
@@ -273,14 +278,30 @@ onMounted(() => {
 </script>
 
 <style>
-.gradient-text {
-  background: linear-gradient(135deg, #F53D2D, #FF6633, #FFB84D);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* ซ่อนปุ่ม "x" หรือ "clear button" ในช่อง input type="search" บน WebKit browsers */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
 }
 
-@keyframes pulse-custom {
+/* Custom animations */
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
 
   0%,
   100% {
@@ -288,11 +309,53 @@ onMounted(() => {
   }
 
   50% {
-    transform: scale(1.1);
+    transform: scale(1.05);
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.8s ease-out;
+}
+
 .animate-pulse-custom {
-  animation: pulse-custom 2s infinite;
+  animation: pulse 2s infinite;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #F53D2D, #FF6633, #FFB84D);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 </style>
