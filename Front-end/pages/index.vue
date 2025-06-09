@@ -3,7 +3,7 @@
     <HeroSection />
 
     <!-- Categories Section -->
-    <section class="bg-white pb-12 border-b border-gray-200">
+    <!-- <section class="bg-white pb-12 border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-6">
             <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">หมวดหมู่สินค้า</h2>
 
@@ -28,6 +28,76 @@
                         category.name }}</p>
 
                 </NuxtLink>
+            </div>
+        </div>
+    </section> -->
+
+    <!-- Categories Section -->
+    <section class="bg-white pb-12 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">หมวดหมู่สินค้า</h2>
+
+            <div v-if="categoryLoading" class="text-center text-gray-500 py-4">กำลังโหลดหมวดหมู่...</div>
+            <div v-else-if="categoryError" class="text-center text-red-500 py-4">เกิดข้อผิดพลาดในการโหลดหมวดหมู่</div>
+            <div v-else-if="!categories || categories.length === 0" class="text-center text-gray-500 py-4">
+                ไม่พบข้อมูลหมวดหมู่
+            </div>
+
+            <div v-else>
+                <div v-if="categories.length <= 8"
+                    class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 justify-center">
+                    <NuxtLink v-for="(category, index) in categories" :key="category.id"
+                        :to="`/categorys/${category.id}`" class="text-center group cursor-pointer">
+                        <div
+                            :class="['w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg', colorClasses[index % colorClasses.length]]">
+                            <img v-if="category.imageUrl" :src="category.imageUrl" :alt="category.name"
+                                class="w-8 h-8" />
+                            
+                        </div>
+                        <p class="text-sm font-medium text-gray-700 group-hover:text-orange-600 transition-colors">{{
+                            category.name }}</p>
+                    </NuxtLink>
+                </div>
+
+                <div v-else class="relative">
+                    <swiper :modules="[SwiperNavigation]" :slides-per-view="8" :space-between="16" :navigation="{
+                        nextEl: '.swiper-button-next-custom',
+                        prevEl: '.swiper-button-prev-custom',
+                    }" :breakpoints="{
+                        320: { slidesPerView: 3, spaceBetween: 10 },
+                        640: { slidesPerView: 4, spaceBetween: 16 },
+                        768: { slidesPerView: 6, spaceBetween: 16 },
+                        1024: { slidesPerView: 8, spaceBetween: 16 },
+                    }">
+                        <swiper-slide v-for="(category, index) in categories" :key="category.id">
+                            <NuxtLink :to="`/categorys/${category.id}`"
+                                class="text-center group cursor-pointer block py-2">
+                                <div
+                                    :class="['w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg', colorClasses[index % colorClasses.length]]">
+                                    <img v-if="category.imageUrl" :src="category.imageUrl" :alt="category.name"
+                                        class="w-8 h-8" />
+                                    
+                                </div>
+                                <p
+                                    class="text-sm font-medium text-gray-700 group-hover:text-orange-600 transition-colors">
+                                    {{ category.name }}</p>
+                            </NuxtLink>
+                        </swiper-slide>
+                    </swiper>
+
+                    <div class="swiper-button-prev-custom">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                        </svg>
+                    </div>
+                    <div class="swiper-button-next-custom">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -83,6 +153,12 @@ import HeroSection from "~/components/HeroSection.vue"
 import FlashDeal from "~/components/FlashDeal.vue"
 import Newsletter from "~/components/Newsletter.vue"
 
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Navigation as SwiperNavigation } from 'swiper/modules'; // Renamed to avoid conflict
+
+// 2. Import Swiper's CSS
+import 'swiper/css';
+import 'swiper/css/navigation';
 
 const { token, user } = useAuth()
 
@@ -261,5 +337,60 @@ hr {
     margin-bottom: 2rem;
     border: 0;
     border-top: 1px solid rgba(0, 0, 0, .1);
+}
+
+/* Custom Swiper Navigation Buttons */
+.swiper-button-prev-custom,
+.swiper-button-next-custom {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4B5563;
+    /* gray-600 */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.swiper-button-prev-custom:hover,
+.swiper-button-next-custom:hover {
+    background-color: #f3f4f6;
+    /* gray-100 */
+    color: #1f2937;
+    /* gray-800 */
+}
+
+/* ถ้า Swiper อยู่ชิดขอบซ้าย-ขวา ปุ่มอาจจะล้นออกไป ให้ใช้ค่าติดลบ */
+.swiper-button-prev-custom {
+    left: -22px;
+}
+
+.swiper-button-next-custom {
+    right: -22px;
+}
+
+/* ถ้าอยู่ในหน้าจอขนาดเล็ก ให้ปุ่มอยู่ข้างในแทน */
+@media (max-width: 768px) {
+    .swiper-button-prev-custom {
+        left: 5px;
+    }
+
+    .swiper-button-next-custom {
+        right: 5px;
+    }
+}
+
+/* Swiper.js adds a "swiper-button-disabled" class when at the beginning/end */
+.swiper-button-disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
 }
 </style>
