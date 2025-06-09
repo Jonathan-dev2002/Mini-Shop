@@ -45,7 +45,7 @@ A simple e-commerce application with a **Nuxt.js** frontend and **Hapi.js** back
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/your-username/mini-shop.git
+   git clone https://github.com/Jonathan-dev2002/Mini-Shop.git
    cd mini-shop
    ```
 
