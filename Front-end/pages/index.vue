@@ -45,7 +45,7 @@
             <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 
                 <!-- Product Card -->
-                <NuxtLink v-for="product in allProducts.slice(0, 4)" :key="product.id" :to="`/products/${product.id}`"
+                <NuxtLink v-for="product in featuredProducts" :key="product.id" :to="`/products/${product.id}`"
                     class="block bg-white rounded-2xl shadow-sm card-hover overflow-hidden group cursor-pointer">
 
                     <div class="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 relative overflow-hidden">
@@ -94,6 +94,8 @@ const categories = ref([])
 const categoryLoading = ref(false)
 const categoryError = ref(null)
 
+const featuredProducts = ref([])
+
 async function fetchProductsData() {
     productsPending.value = true
     productsError.value = null
@@ -132,6 +134,13 @@ const colorClasses = [
     'bg-gradient-to-br from-teal-400 to-cyan-500',
     'bg-gradient-to-r from-orange-400 to-red-500'
 ];
+
+watch(allProducts, (newProducts) => {
+    if (newProducts && newProducts.length > 0) {
+        const shuffled = [...newProducts].sort(() => 0.5 - Math.random());
+        featuredProducts.value = shuffled.slice(0, 4);
+    }
+}, { immediate: true });
 
 onMounted(() => {
     // Add click effects to product cards
