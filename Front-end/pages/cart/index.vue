@@ -1,7 +1,7 @@
 <template>
     <section class="h-[100vh]">
         <!-- Cart Header -->
-        <div class="max-w-6xl mx-auto px-6 py-5 border-b border-orange-200">
+        <div class="max-w-6xl mx-auto px-6 py-5 border-b border-gray-200">
             <div class="flex items-center space-x-4">
                 <div
                     class="w-12 h-12 bg-gradient-to-r from-[#F53D2D] to-[#FF6633] rounded-full flex items-center justify-center text-white">
@@ -38,7 +38,8 @@
                                     <!-- Product Image -->
                                     <div
                                         class="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex-shrink-0">
-                                        <div class="w-full h-full rounded-xl bg-gray-200"></div>
+                                        <img v-if="it.product.imageUrl" :src="it.product.imageUrl" :alt="it.product.name" class="w-full h-full object-cover rounded-xl">
+                                        <div v-else class="w-full h-full rounded-xl bg-gray-200"></div>
                                     </div>
 
                                     <!-- Product Details -->

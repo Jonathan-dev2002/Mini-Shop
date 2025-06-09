@@ -1,51 +1,15 @@
 <template>
-
-    <HeroSection />
-
-    <!-- Categories Section -->
-    <section class="bg-white pb-12 border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">หมวดหมู่สินค้า</h2>
-
-            <div v-if="categoryLoading" class="text-center text-gray-500 py-4">กำลังโหลดหมวดหมู่...</div>
-            <div v-else-if="categoryError" class="text-center text-red-500 py-4">เกิดข้อผิดพลาดในการโหลดหมวดหมู่</div>
-            <div v-else-if="!categories || categories.length === 0" class="text-center text-gray-500 py-4">
-                ไม่พบข้อมูลหมวดหมู่</div>
-
-            <div v-else class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
-
-                <NuxtLink v-for="(category, index) in categories" :key="category.id" :to="`/categorys/${category.id}`"
-                    class="text-center group cursor-pointer">
-
-                    <div :class="[
-                        'w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg',
-                        colorClasses[index % colorClasses.length]
-                    ]">
-                        <img v-if="category.imageUrl" :src="category.imageUrl" :alt="category.name" class="w-8 h-8" />
-                    </div>
-
-                    <p class="text-sm font-medium text-gray-700  transition-colors">{{
-                        category.name }}</p>
-
-                </NuxtLink>
-            </div>
-        </div>
-    </section>
-
     <!-- Featured Products -->
     <section class="bg-gray-50 py-12">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-800">สินค้าแนะนำ</h2>
-                <NuxtLink to="/productAll" class="text-orange-500 hover:text-orange-600 font-medium">ดูทั้งหมด →
-                </NuxtLink>
-            </div>
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">สินค้าทั้งหมด</h2>
+
             <div v-if="productsPending">กำลังโหลดสินค้า...</div>
             <div v-else-if="productsError || !allProducts">ไม่พบสินค้า</div>
             <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 
                 <!-- Product Card -->
-                <NuxtLink v-for="product in allProducts.slice(0, 4)" :key="product.id" :to="`/products/${product.id}`"
+                <NuxtLink v-for="product in allProducts" :key="product.id" :to="`/products/${product.id}`"
                     class="block bg-white rounded-2xl shadow-sm card-hover overflow-hidden group cursor-pointer">
 
                     <div class="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 relative overflow-hidden">
@@ -67,10 +31,6 @@
             </div>
         </div>
     </section>
-
-    <FlashDeal />
-    <Newsletter />
-
 
 </template>
 
@@ -121,17 +81,6 @@ async function fetchCategoriesData() {
         categoryLoading.value = false
     }
 }
-
-const colorClasses = [
-    'bg-gradient-to-br from-red-400 to-pink-500',
-    'bg-gradient-to-br from-blue-400 to-purple-500',
-    'bg-gradient-to-br from-green-400 to-teal-500',
-    'bg-gradient-to-br from-yellow-400 to-orange-500',
-    'bg-gradient-to-br from-purple-400 to-indigo-500',
-    'bg-gradient-to-br from-pink-400 to-red-500',
-    'bg-gradient-to-br from-teal-400 to-cyan-500',
-    'bg-gradient-to-r from-orange-400 to-red-500'
-];
 
 onMounted(() => {
     // Add click effects to product cards

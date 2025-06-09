@@ -1,218 +1,345 @@
 <template>
-    <div>
-        <h1>Manage Products</h1>
-        <button class="btn-primary" @click="openCreateModal">+ New Product</button>
-        <div v-if="isLoading && products.length === 0" style="margin: 1rem 0; font-style: italic; color: #555;">
-            Processing...
-        </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Des</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>CreatedAt</th>
-                    <th>UpdatedAt</th>
-                    <th>Category</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-if="isLoading && products.length === 0">
-                    <td :colspan="8">Loading products…</td>
-                </tr>
-                <tr v-else-if="loadError">
-                    <td :colspan="8" class="text-error">Failed to load products</td>
-                </tr>
-                <tr v-else-if="!isLoading && products.length === 0">
-                    <td :colspan="8">No products found.</td>
-                </tr>
-                <tr v-else v-for="item in products" :key="item.id">
-                    <td>{{ item.id }}</td>
-                    <td>
-                        <img v-if="item.imageUrl" :src="item.imageUrl" :alt="item.name"
-                            style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />
-                        <span v-else style="font-size: 0.8em; color: #777;">No Image</span>
-                    </td>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.description && item.description.length > 50 ? item.description.substring(0, 50) + '...'
-                        : item.description }}</td>
-                    <td>{{ item.price?.toFixed(2) }}</td>
-                    <td>{{ item.stock }}</td>
-                    <td>{{ new Date(item.createdAt).toLocaleString() }}</td>
-                    <td>{{ new Date(item.updatedAt).toLocaleString() }}</td>
-                    <td>{{ item.category?.name || 'N/A' }}</td>
-                    <td>
-                        <button @click="openEditModal(item)" class="btn-sm">Edit</button>
-                        <button @click="openDeleteModal(item.id)" class="btn-sm text-error">Delete</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-
-        <!-- Create Modal -->
-        <div v-if="showCreateModal" class="modal-overlay">
-            <div class="modal" style="width: 500px;">
-                <h2>Create Product</h2>
-                <div>
-                    <label>Name:</label>
-                    <input v-model="modalName" placeholder="Product Name" />
-                </div>
-                <div>
-                    <label>Description:</label>
-                    <textarea v-model="modalDescription" placeholder="Product Description" rows="3"></textarea>
-                </div>
-                <div>
-                    <label>Price:</label>
-                    <input v-model.number="modalPrice" type="number" placeholder="0.00" step="0.01" />
-                </div>
-                <div>
-                    <label>Stock:</label>
-                    <input v-model.number="modalStock" type="number" placeholder="0" />
-                </div>
-                <div>
-                    <label>Category:</label>
-                    <select v-model="modalCate">
-                        <option :value="null" disabled>-- Select Category --</option>
-                        <option v-for="c in categories" :key="c.id" :value="c.id">
-                            {{ c.name }}
-                        </option>
-                    </select>
-                </div>
-                <div>
-                    <label>Image:</label>
-                    <input type="file" @change="handleProductFileChange" accept="image/*" />
-                </div>
-                <div v-if="modalFilePreview" style="margin-top: 0.5rem; text-align: center;">
-                    <p>Preview:</p>
-                    <img :src="modalFilePreview" alt="Image preview"
-                        style="max-width: 200px; max-height: 200px; border: 1px solid #ddd; margin-top: .3rem;" />
-                </div>
-                <div class="modal-actions">
-                    <button @click="confirmCreate" class="btn-primary" :disabled="isLoading">Save</button>
-                    <button type="button" @click="closeCreateModal" :disabled="isLoading">Cancel</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Edit Modal -->
-        <div v-if="showEditModal" class="modal-overlay">
-            <div class="modal" style="width: 500px;">
-                <h2>Edit Product (ID: {{ editId }})</h2>
-                <div>
-                    <label>Name:</label>
-                    <input v-model="modalName" />
-                </div>
-                <div>
-                    <label>Description:</label>
-                    <textarea v-model="modalDescription" rows="3"></textarea>
-                </div>
-                <div>
-                    <label>Price:</label>
-                    <input v-model.number="modalPrice" type="number" step="0.01" />
-                </div>
-                <div>
-                    <label>Stock:</label>
-                    <input v-model.number="modalStock" type="number" />
-                </div>
-                <div>
-                    <label>Category:</label>
-                    <select v-model="modalCate">
-                        <option :value="null" disabled>-- Select Category --</option>
-                        <option v-for="c in categories" :key="c.id" :value="c.id">
-                            {{ c.name }}
-                        </option>
-                    </select>
-                </div>
-                <div>
-                    <label>Current Image:</label>
-                    <div v-if="currentEditProductImageUrl" style="text-align: center;">
-                        <img :src="currentEditProductImageUrl" alt="Current product image"
-                            style="max-width: 150px; max-height: 150px; border: 1px solid #ddd; margin-top: .3rem;" />
+    <div class="bg-gray-50 min-h-screen">
+        <div class="max-w-8xl mx-auto px-6 py-5 border-b border-orange-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-r from-[#F53D2D] to-[#FF6633] rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6 text-white">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                        </svg>
                     </div>
-                    <span v-else style="font-size: 0.8em; color: #777;">No current image</span>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">จัดการสินค้า</h1>
+                        <p class="text-gray-500">จัดการข้อมูลสินค้าทั้งหมดในร้านค้า</p>
+                    </div>
                 </div>
-                <div>
-                    <label>New Image (optional):</label>
-                    <input type="file" @change="handleProductFileChange" accept="image/*" />
+                <button @click="openCreateModal"
+                    class="bg-gradient-to-r from-[#F53D2D] to-[#FF6633] text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg btn-hover flex items-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    <span>เพิ่มสินค้าใหม่</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="max-w-8xl mx-auto px-6 py-8">
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gradient-to-r from-orange-50 to-red-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    #</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    รูปสินค้า</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    ชื่อสินค้า</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    คำอธิบาย</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    ราคา</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Stock</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    วันที่สร้าง</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    อัปเดตล่าสุด</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    หมวดหมู่</th>
+                                <th
+                                    class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    การดำเนินการ</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr v-if="isLoading">
+                                <td colspan="10" class="px-6 py-10 text-center text-gray-500">กำลังโหลดข้อมูลสินค้า...
+                                </td>
+                            </tr>
+                            <tr v-else-if="loadError">
+                                <td colspan="10" class="px-6 py-10 text-center text-red-500">
+                                    เกิดข้อผิดพลาดในการโหลดข้อมูล</td>
+                            </tr>
+                            <tr v-else-if="!products || products.length === 0">
+                                <td colspan="10" class="px-6 py-10 text-center text-gray-500">ไม่พบข้อมูลสินค้า</td>
+                            </tr>
+                            <tr v-else v-for="item in products" :key="item.id" class="table-row-hover">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{ item.id }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div
+                                        class="w-16 h-16 bg-gray-200 rounded-xl flex-shrink-0 flex items-center justify-center">
+                                        <img v-if="item.imageUrl" :src="item.imageUrl" :alt="item.name"
+                                            class="w-full h-full object-cover rounded-xl">
+                                        <span v-else class="text-xs text-gray-400">No Img</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-semibold text-gray-900">{{ item.name }}</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900 max-w-xs truncate" :title="item.description">
+                                        {{ item.description || '-' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-lg font-bold text-orange-500">฿{{ item.price?.toFixed(2) }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        :class="item.stock > 10 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                        {{ item.stock }} ชิ้น
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ new
+                                    Date(item.createdAt).toLocaleDateString('th-TH') }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ new
+                                    Date(item.updatedAt).toLocaleDateString('th-TH') }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ item.category?.name || 'N/A' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="flex items-center justify-center space-x-2">
+                                        <button @click="openEditModal(item)"
+                                            class="text-blue-600 hover:text-blue-900 transition-colors duration-200 p-2 hover:bg-blue-50 rounded-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                            </svg>
+                                        </button>
+                                        <button @click="openDeleteModal(item.id)"
+                                            class="text-red-600 hover:text-red-900 transition-colors duration-200 p-2 hover:bg-red-50 rounded-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div v-if="modalFilePreview" style="margin-top: 0.5rem; text-align: center;">
-                    <p>New Image Preview:</p>
-                    <img :src="modalFilePreview" alt="New image preview"
-                        style="max-width: 200px; max-height: 200px; border: 1px solid #ddd; margin-top: .3rem;" />
+            </div>
+        </div>
+        <!-- Pagination -->
+        <div class="bg-white rounded-2xl max-w-8xl mx-6 px-6 shadow-sm mt-6 py-4 animate-slideUp"
+            style="animation-delay: 0.1s">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-700">
+                    แสดง <span class="font-medium">1-5</span> จาก
+                    <span class="font-medium">47</span> รายการ
                 </div>
-                <div class="modal-actions">
-                    <button @click="confirmEdit" class="btn-primary" :disabled="isLoading">Update</button>
-                    <button type="button" @click="closeEditModal" :disabled="isLoading">Cancel</button>
+                <div class="flex items-center space-x-2">
+
+                    <button
+                        class="px-3 py-2 rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:-translate-y-px disabled:transform-none"
+                        disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                        </svg>
+                    </button>
+
+                    <button
+                        class="px-3 py-2 rounded-lg bg-gradient-to-r from-[#F53D2D] to-[#FF6633] text-white font-medium transition-transform duration-200 hover:-translate-y-px">
+                        1
+                    </button>
+
+                    <button
+                        class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:-translate-y-px">
+                        2
+                    </button>
+
+                    <button
+                        class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:-translate-y-px">
+                        3
+                    </button>
+
+                    <span class="px-3 py-2 text-gray-500">...</span>
+
+                    <button
+                        class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:-translate-y-px">
+                        10
+                    </button>
+
+                    <button
+                        class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:-translate-y-px">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Delete Confirm Modal -->
-        <div v-if="showDeleteModal" class="modal-overlay">
-            <div class="modal">
-                <h2>Confirm Delete</h2>
-                <p>Are you sure you want to delete?</p>
-                <div class="modal-actions">
-                    <button @click="confirmDelete" class="btn-primary text-error">Yes</button>
-                    <button @click="closeDeleteModal">No</button>
-                </div>
+
+
+    </div>
+    <!-- Create Modal -->
+    <div v-if="showCreateModal" class="modal-overlay">
+        <div class="modal" style="width: 500px;">
+            <h2>Create Product</h2>
+            <div>
+                <label>Name:</label>
+                <input v-model="modalName" placeholder="Product Name" />
+            </div>
+            <div>
+                <label>Description:</label>
+                <textarea v-model="modalDescription" placeholder="Product Description" rows="3"></textarea>
+            </div>
+            <div>
+                <label>Price:</label>
+                <input v-model.number="modalPrice" type="number" placeholder="0.00" step="0.01" />
+            </div>
+            <div>
+                <label>Stock:</label>
+                <input v-model.number="modalStock" type="number" placeholder="0" />
+            </div>
+            <div>
+                <label>Category:</label>
+                <select v-model="modalCate">
+                    <option :value="null" disabled>-- Select Category --</option>
+                    <option v-for="c in categories" :key="c.id" :value="c.id">
+                        {{ c.name }}
+                    </option>
+                </select>
+            </div>
+            <div>
+                <label>Image:</label>
+                <input type="file" @change="handleProductFileChange" accept="image/*" />
+            </div>
+            <div v-if="modalFilePreview" style="margin-top: 0.5rem; text-align: center;">
+                <p>Preview:</p>
+                <img :src="modalFilePreview" alt="Image preview"
+                    style="max-width: 200px; max-height: 200px; border: 1px solid #ddd; margin-top: .3rem;" />
+            </div>
+            <div class="modal-actions">
+                <button @click="confirmCreate" class="btn-primary" :disabled="isLoading">Save</button>
+                <button type="button" @click="closeCreateModal" :disabled="isLoading">Cancel</button>
             </div>
         </div>
+    </div>
 
-        <!-- Toast Container -->
-        <div class="toast-container">
-            <div v-for="(msg, i) in toasts" :key="i" class="toast"
-                :class="{ 'toast-error': msg.toLowerCase().includes('failed') || msg.toLowerCase().includes('error') }">
-                {{ msg }}
+    <!-- Edit Modal -->
+    <div v-if="showEditModal" class="modal-overlay">
+        <div class="modal" style="width: 500px;">
+            <h2>Edit Product (ID: {{ editId }})</h2>
+            <div>
+                <label>Name:</label>
+                <input v-model="modalName" />
             </div>
+            <div>
+                <label>Description:</label>
+                <textarea v-model="modalDescription" rows="3"></textarea>
+            </div>
+            <div>
+                <label>Price:</label>
+                <input v-model.number="modalPrice" type="number" step="0.01" />
+            </div>
+            <div>
+                <label>Stock:</label>
+                <input v-model.number="modalStock" type="number" />
+            </div>
+            <div>
+                <label>Category:</label>
+                <select v-model="modalCate">
+                    <option :value="null" disabled>-- Select Category --</option>
+                    <option v-for="c in categories" :key="c.id" :value="c.id">
+                        {{ c.name }}
+                    </option>
+                </select>
+            </div>
+            <div>
+                <label>Current Image:</label>
+                <div v-if="currentEditProductImageUrl" style="text-align: center;">
+                    <img :src="currentEditProductImageUrl" alt="Current product image"
+                        style="max-width: 150px; max-height: 150px; border: 1px solid #ddd; margin-top: .3rem;" />
+                </div>
+                <span v-else style="font-size: 0.8em; color: #777;">No current image</span>
+            </div>
+            <div>
+                <label>New Image (optional):</label>
+                <input type="file" @change="handleProductFileChange" accept="image/*" />
+            </div>
+            <div v-if="modalFilePreview" style="margin-top: 0.5rem; text-align: center;">
+                <p>New Image Preview:</p>
+                <img :src="modalFilePreview" alt="New image preview"
+                    style="max-width: 200px; max-height: 200px; border: 1px solid #ddd; margin-top: .3rem;" />
+            </div>
+            <div class="modal-actions">
+                <button @click="confirmEdit" class="btn-primary" :disabled="isLoading">Update</button>
+                <button type="button" @click="closeEditModal" :disabled="isLoading">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay">
+        <div class="modal">
+            <h2>Confirm Delete</h2>
+            <p>Are you sure you want to delete?</p>
+            <div class="modal-actions">
+                <button @click="confirmDelete" class="btn-primary text-error">Yes</button>
+                <button @click="closeDeleteModal">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container">
+        <div v-for="(msg, i) in toasts" :key="i" class="toast"
+            :class="{ 'toast-error': msg.toLowerCase().includes('failed') || msg.toLowerCase().includes('error') }">
+            {{ msg }}
         </div>
     </div>
 </template>
 
 <script setup>
+// This script block should be the same as the one from your functional file
 import { onMounted } from 'vue'
 import { useProduct } from '~/composables/useProduct'
 import { useCategory } from '~/composables/useCategory'
 
-// เรียก Composable สินค้า
 const {
-    products,
-    isLoading,
-    loadError,
-    showCreateModal,
-    showEditModal,
-    showDeleteModal,
-    modalName,
-    modalDescription,
-    modalPrice,
-    modalStock,
-    modalCate,
-    modalFilePreview,
-    currentEditProductImageUrl,
+    products, isLoading, loadError,
+    showCreateModal, showEditModal, showDeleteModal,
+    modalName, modalDescription, modalPrice, modalStock, modalCate,
+    modalFilePreview, currentEditProductImageUrl, editId,
     toasts,
     fetchProducts,
-    openCreateModal,
-    closeCreateModal,
-    confirmCreate,
-    openEditModal,
-    closeEditModal,
-    confirmEdit,
-    openDeleteModal,
-    closeDeleteModal,
-    confirmDelete,
+    openCreateModal, closeCreateModal, confirmCreate,
+    openEditModal, closeEditModal, confirmEdit,
+    openDeleteModal, closeDeleteModal, confirmDelete,
     handleProductFileChange
 } = useProduct()
 
-// เรียก Composable หมวดหมู่
 const {
     categories,
     fetchCategories
 } = useCategory()
+
 
 onMounted(async () => {
     await fetchCategories()
@@ -221,81 +348,69 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* CSS เหมือนกับหน้า Category Management ที่คุณชอบได้เลยครับ */
-/* สามารถคัดลอก CSS จาก pages/categorys/index.vue ที่ปรับแก้ล่าสุดมาใช้ได้เลย */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
+/* Custom animations */
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
-th,
-td {
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    text-align: left;
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
 }
 
-th:first-child,
-td:first-child {
-    /* ID */
-    width: 5%;
-    text-align: center;
+.animate-slideUp {
+    animation: slideUp 0.8s ease-out;
 }
 
-td:nth-child(2) {
-    /* Image */
-    width: 70px;
-    /* Fixed width for image column */
-    text-align: center;
+.animate-pulse-custom {
+    animation: pulse 2s infinite;
 }
 
-th:last-child,
-td:last-child {
-    /* Actions */
-    width: 12%;
-    /* Adjust as needed */
-    text-align: center;
+.gradient-text {
+    background: linear-gradient(135deg, #f53d2d, #ff6633, #ffb84d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-.btn-primary {
-    background: #4caf50;
-    color: white;
-    padding: 0.4rem 0.8rem;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
+.glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.btn-sm {
-    padding: 0.2rem 0.5rem;
-    cursor: pointer;
-    border: 1px solid #ccc;
-    background-color: #f0f0f0;
-    border-radius: 3px;
-    margin-right: 5px;
+.btn-hover {
+    transition: all 0.3s ease;
 }
 
-.btn-sm:hover {
-    background-color: #e0e0e0;
+.btn-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 61, 45, 0.3);
 }
 
-.text-error {
-    color: #c00 !important;
+.table-row-hover {
+    transition: all 0.2s ease;
 }
 
-.btn-sm.text-error {
-    /* Delete button in table */
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: white !important;
-}
-
-.btn-sm.text-error:hover {
-    background-color: #c82333;
-    border-color: #bd2130;
-}
-
+/* .table-row-hover:hover {
+        background-color: rgba(249, 250, 251, 0.8);
+       transform: scale(1.01);
+      } */
 
 .modal-overlay {
     position: fixed;

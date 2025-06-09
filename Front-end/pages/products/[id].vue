@@ -5,7 +5,7 @@
   <div v-else-if="error || !product">
     <p>ไม่พบข้อมูลสินค้า หรือเกิดข้อผิดพลาดในการโหลด</p>
   </div>
-  <section v-else class="bg-white py-8">
+  <section v-else class="bg-white pt-[10vh] pb-[25vh]">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <!-- Product Image -->
@@ -13,7 +13,9 @@
           <div class="aspect-square product-image rounded-3xl shadow-2xl overflow-hidden group cursor-pointer">
             <div class="w-full h-full flex items-center justify-center relative">
               <!-- Placeholder for product image -->
-              <div class="text-white/80 text-center z-10">
+              <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name"
+                class="w-full h-full object-cover">
+              <div v-else class="text-white/80 text-center z-10">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1"
                   stroke="currentColor" class="w-32 h-32 mx-auto mb-4 opacity-60">
                   <path stroke-linecap="round" stroke-linejoin="round"

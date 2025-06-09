@@ -1,36 +1,57 @@
 <template>
-    <div class="category-products-page">
-        <div v-if="pendingCategory || pendingProducts">
-            <p>กำลังโหลดข้อมูล...</p>
-        </div>
-        <div v-else-if="categoryError || productsError">
-            <p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
-            <pre v-if="categoryError">{{ categoryError }}</pre>
-            <pre v-if="productsError">{{ productsError }}</pre>
-        </div>
-        <div v-else>
-            <h1 v-if="categoryData">สินค้าในหมวดหมู่: {{ categoryData.name }}</h1>
-            <h1 v-else>สินค้าในหมวดหมู่</h1>
+    <section class="bg-gray-50 py-12 min-h-screen">
+        <div class="max-w-7xl mx-auto px-6">
 
-            <div v-if="productsData && productsData.length > 0" class="products-grid">
-                <div v-for="product in productsData" :key="product.id" class="product-card">
-                    <NuxtLink :to="`/products/${product.id}`">
-                        <h2>{{ product.name }}</h2>
-                        <p>{{ product.description }}</p>
-                        <p>ราคา: ฿{{ product.price.toFixed(2) }}</p>
-                        <p>คงเหลือ: {{ product.stock }}</p>
+            <div v-if="pendingCategory || pendingProducts" class="text-center py-10">
+                <h2 class="text-2xl font-semibold text-gray-500">กำลังโหลดข้อมูล...</h2>
+            </div>
+
+            <div v-else-if="categoryError || productsError" class="text-center py-10">
+                <h2 class="text-2xl font-bold text-red-500">เกิดข้อผิดพลาด</h2>
+                <p class="text-gray-600 mt-2">ไม่สามารถโหลดข้อมูลได้ในขณะนี้</p>
+                <NuxtLink to="/" class="mt-4 inline-block text-blue-500 hover:underline">กลับไปหน้าแรก</NuxtLink>
+            </div>
+
+            <div v-else>
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">
+                    <span v-if="categoryData">หมวดหมู่: {{ categoryData.name }}</span>
+                    <span v-else>สินค้าทั้งหมด</span>
+                </h2>
+
+                <div v-if="!productsData || productsData.length === 0" class="text-center py-10 text-gray-500">
+                    <p class="text-lg">ไม่พบสินค้าในหมวดหมู่นี้</p>
+                </div>
+
+                <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+                    <div v-for="product in productsData" :key="product.id"
+                        class="bg-white rounded-2xl shadow-sm card-hover overflow-hidden group flex flex-col">
+                        <NuxtLink :to="`/products/${product.id}`" class="block">
+                            <div
+                                class="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 relative overflow-hidden">
+                                <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <div v-else
+                                    class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                                    ไม่มีรูปภาพ
+                                </div>
+                                <div class="absolute inset-0 shimmer opacity-0 group-hover:opacity-100"></div>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-medium text-gray-800 text-sm mb-2 h-10 line-clamp-2">{{ product.name }}
+                                </h3>
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <span class="text-orange-500 font-bold">฿{{ product.price.toFixed(2) }}</span>
+                                </div>
+                            </div>
                         </NuxtLink>
-                     <!-- <button @click="handleAddToCart(product)" class="btn-add-to-cart" :disabled="product.stock <= 0">
-                        🛒 เพิ่มลงตะกร้า
-                    </button> -->
+
+                        
+                    </div>
                 </div>
             </div>
-            <div v-else>
-                <p>ไม่พบสินค้าในหมวดหมู่นี้</p>
-            </div>
         </div>
-        <NuxtLink to="/" class="back-link">กลับไปหน้าแรก</NuxtLink>
-    </div>
+    </section>
 </template>
 
 <script setup>
@@ -40,21 +61,21 @@ import { useCart } from '~/composables/useCart'
 
 const route = useRoute()
 const categoryId = route.params.id
-const nuxtApp = useNuxtApp() 
+const nuxtApp = useNuxtApp()
 
 
 const { data: categoryData, pending: pendingCategory, error: categoryError } = await useAsyncData(
     `category-${categoryId}`,
-    () => nuxtApp.$api(`/categorys/${categoryId}`) 
+    () => nuxtApp.$api(`/categorys/${categoryId}`)
 )
 
 const { data: productsData, pending: pendingProducts, error: productsError } = await useAsyncData(
     `products-in-category-${categoryId}`,
     () => nuxtApp.$api(`/products?categoryId=${categoryId}`)
-    
+
 )
 
-const { addItem, items: cartItems } = useCart() 
+const { addItem, items: cartItems } = useCart()
 
 const handleAddToCart = (product) => {
     const token = useCookie('token').value
@@ -75,77 +96,83 @@ if (!categoryId) {
 </script>
 
 <style scoped>
-.category-products-page {
-    max-width: 1200px;
+.category-section {
     margin: 20px auto;
-    padding: 20px;
-}
-
-.products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.product-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
     padding: 15px;
+    max-width: 1200px;
     text-align: center;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.category-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+.category-link {
+    display: block;
+    padding: 10px 20px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.category-link:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.container {
+    width: 1500px;
+    /* อาจจะต้องปรับตาม layout โดยรวม */
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2em;
+}
+
+.box {
     display: flex;
     flex-direction: column;
-}
-
-.product-card a {
+    align-items: center;
+    padding: 1em;
+    width: 400px;
     text-decoration: none;
-    color: inherit;
-    flex-grow: 1; /* ทำให้ link ขยายเต็มพื้นที่ก่อนปุ่ม */
+    color: black;
+    background-color: rgb(231, 231, 231);
+    border-radius: 8px;
+    /* เพิ่มความสวยงาม */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* เพิ่มเงา */
 }
 
-.product-card h2 {
-    font-size: 1.2em;
-    margin-bottom: 10px;
+.box:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    /* เงาเมื่อ hover */
 }
 
-.product-card img { /* ถ้ามีรูปภาพ */
-    max-width: 100%;
-    height: auto;
-    margin-bottom: 10px;
-    border-radius: 4px;
-}
-
-.btn-add-to-cart {
+.btn-add-cart {
     background: #ff5722;
     color: white;
-    padding: 8px 15px;
+    padding: 0.5em 1em;
     border: none;
     cursor: pointer;
     border-radius: 4px;
-    font-size: 0.9em;
-    margin-top: 10px; /* เว้นระยะจาก content ด้านบน */
-    transition: background-color 0.2s;
-}
-.btn-add-to-cart:hover {
-    background: #e64a19;
-}
-.btn-add-to-cart:disabled {
-    background: #ccc;
-    cursor: not-allowed;
+    margin-top: auto;
+    /* ดันปุ่มไปด้านล่างสุดของ box */
 }
 
-.back-link {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 10px 15px;
-    background-color: #6c757d;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-}
-.back-link:hover {
-    background-color: #5a6268;
+hr {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border: 0;
+    border-top: 1px solid rgba(0, 0, 0, .1);
 }
 </style>

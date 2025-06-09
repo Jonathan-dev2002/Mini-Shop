@@ -1,6 +1,6 @@
 <template>
     <div class="bg-gray-50 min-h-screen">
-        <div class="max-w-6xl mx-auto px-6 py-5 border-b border-orange-200">
+        <div class="max-w-6xl mx-auto px-6 py-5 border-b border-gray-200">
             <div class="flex items-center space-x-4">
                 <div
                     class="w-12 h-12 bg-gradient-to-r from-[#F53D2D] to-[#FF6633] rounded-full flex items-center justify-center text-white">
@@ -68,6 +68,9 @@
                             <div v-for="it in items" :key="it.id" class="p-6">
                                 <div class="flex items-center space-x-4">
                                     <div class="w-16 h-16 bg-gray-200 rounded-xl flex-shrink-0">
+                                        <img v-if="it.product.imageUrl" :src="it.product.imageUrl"
+                                            :alt="it.product.name" class="w-full h-full object-cover rounded-xl">
+                                        <div v-else class="w-full h-full rounded-xl bg-gray-200"></div>
                                     </div>
                                     <div class="flex-1">
                                         <h3 class="font-semibold text-gray-800 mb-1">{{ it.product.name }}</h3>
