@@ -21,6 +21,8 @@ A simple e-commerce application with a **Nuxt.js** frontend and **Hapi.js** back
 * Product & Category management (CRUD)
 * Shopping cart (add, update, remove items)
 * Order checkout & history
+* Address management (CRUD, set default)
+* Image uploads handled via **Cloudinary**
 * Validation via Zod
 * API documentation with Swagger UI
 
@@ -31,6 +33,8 @@ A simple e-commerce application with a **Nuxt.js** frontend and **Hapi.js** back
 * **ORM/ODM:** Prisma
 * **Database:** PostgreSQL
 * **Authentication:** JSON Web Tokens (JWT)
+* **Image Storage:** Cloudinary
+* **Error Handling:** Boom
 * **Validation:** Zod
 * **API Docs:** Swagger (Hapi Swagger)
 
@@ -39,6 +43,7 @@ A simple e-commerce application with a **Nuxt.js** frontend and **Hapi.js** back
 * Node.js v14+ or v16+
 * npm or yarn
 * PostgreSQL instance
+* Cloudinary Account (for API Key, Secret, and Cloud Name)
 
 ## Installation
 
@@ -69,7 +74,12 @@ PORT=3000
 DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<database>?schema=public"
 
 # JWT Secret
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=your_super_secret_jwt_key
+
+# Cloudinary Credentials
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 ## Database Setup
@@ -96,7 +106,7 @@ JWT_SECRET=your_jwt_secret
 
    ```bash
    cd frontend
-   npm run dev    # starts Nuxt.js on http://localhost:3001
+   npm run dev -- -o    # starts Nuxt.js on http://localhost:3001
    ```
 
 ## API Endpoints
@@ -144,6 +154,15 @@ Visit **[http://localhost:3000/documentation](http://localhost:3000/documentatio
 * `GET /orders` – List my orders
 * `GET /orders/{id}` – Order details
 * `PUT /orders/{id}/status` – Update status (Admin or via webhook)
+
+### Addresses (Authenticated users)
+
+* `POST /addresses` – Create a new address
+* `GET /addresses` – Get all addresses for the user
+* `GET /addresses/{id}` – Get a specific address
+* `PUT /addresses/{id}` – Update an address
+* `DELETE /addresses/{id}` – Delete an address
+* `PUT /addresses/{id}/default` – Set an address as the default
 
 ## Contact
 
