@@ -176,18 +176,18 @@ const error = ref(null);
 
 
 async function fetchProductData() {
-  pending.value = true;   // เริ่มโหลด: ตั้งค่า pending เป็น true
-  error.value = null;     // เคลียร์ error เก่าทิ้ง
+  pending.value = true;
+  error.value = null;
 
   try {
-    // ดึงข้อมูลด้วย $fetch เหมือนเดิม
-    const data = await $fetch(`http://localhost:3000/products/${productId}`);
-    product.value = data; // อัปเดตข้อมูลสินค้าเมื่อสำเร็จ
+    const nuxtApp = useNuxtApp();
+    const data = await nuxtApp.$api(`/products/${productId}`);
+    product.value = data;
   } catch (e) {
     console.error('Failed to fetch product:', e);
-    error.value = e; // เก็บ error ไว้ถ้าการดึงข้อมูลล้มเหลว
+    error.value = e;
   } finally {
-    pending.value = false; // สิ้นสุดการโหลด: ตั้งค่า pending เป็น false
+    pending.value = false;
   }
 }
 

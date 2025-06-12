@@ -5,8 +5,14 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
   runtimeConfig: {
+    // public: {
+    //   apiBase: process.env.NUXT_PUBLIC_API_URL || "http://localhost:3000",
+    // },
+    // public: {
+    //   apiBase: process.env.NUXT_PUBLIC_API_URL ,
+    // },
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_URL || "http://localhost:3000",
+      apiBase:"https://mini-shop-2xsa.onrender.com" ,
     },
   },
   devServer: {
