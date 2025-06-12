@@ -1,8 +1,9 @@
 {
   "name": "mini-shop",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx prisma generate"
   },
@@ -20,10 +21,11 @@
     "dotenv": "^16.5.0",
     "hapi-swagger": "^17.3.2",
     "jsonwebtoken": "^9.0.2",
-    "nodemon": "^3.1.10",
+    
     "zod": "^3.25.28"
   },
   "devDependencies": {
-    "prisma": "^6.8.2"
+    "prisma": "^6.8.2",
+    "nodemon": "^3.1.10"
   }
 }
