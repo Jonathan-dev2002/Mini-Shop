@@ -19,7 +19,7 @@ const init = async () => {
       },
       cors: {
         origin: ["http://localhost:3001",
-          "https://effervescent-cupcake-57d89a.netlify.app/"
+          "https://effervescent-cupcake-57d89a.netlify.app"
         ],
         
         credentials: true,
