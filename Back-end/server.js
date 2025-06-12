@@ -18,10 +18,10 @@ const init = async () => {
         },
       },
       cors: {
-        origin: ["http://localhost:3001",
-          "https://loquacious-bavarois-dc74cd.netlify.app"
-        ],
-        
+        // origin: ["http://localhost:3001",
+        //   "https://loquacious-bavarois-dc74cd.netlify.app"
+        // ],
+        origin:['*'],
         credentials: true,
       },
     },
