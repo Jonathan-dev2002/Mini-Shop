@@ -9,7 +9,8 @@ const { authPlugin } = require("./src/plugins/auth");
 const init = async () => {
   const server = Hapi.server({
     port: process.env.PORT || 3000,
-    host: "localhost",
+    // host: "localhost",
+    host: "0.0.0.0",
     routes: {
       validate: {
         failAction: async (request, h, err) => {
