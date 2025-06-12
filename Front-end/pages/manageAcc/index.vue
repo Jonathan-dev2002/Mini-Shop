@@ -255,7 +255,7 @@ const {
   confirmDelete
 } = useUser()
 
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'admin-auth' });
 
 onMounted(fetchAccounts)
 </script>

@@ -340,6 +340,7 @@ const {
     fetchCategories
 } = useCategory()
 
+definePageMeta({ middleware: 'admin-auth' });
 
 onMounted(async () => {
     await fetchCategories()
