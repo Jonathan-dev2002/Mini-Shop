@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   runtimeConfig: {
     public: {
-      apiBase: "http://localhost:3000",
+      apiBase: process.env.NUXT_PUBLIC_API_URL || "http://localhost:3000",
     },
   },
   devServer: {
@@ -23,12 +23,8 @@ export default defineNuxtConfig({
     },
   },
   vite: {
-    plugins: [
-      tailwindcssVite(),
-    ],
+    plugins: [tailwindcssVite()],
   },
 
-  css: [
-    "~/assets/css/input.css",
-  ],
+  css: ["~/assets/css/input.css"],
 });
