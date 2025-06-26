@@ -5,7 +5,7 @@ const categoryRoutes = require("./category.routes");
 const cartRoutes = require("./cart.routes");
 const orderRoutes = require("./order.routes");
 const addressRoutes = require("./address.routes");
-
+const reviewRoute = require("./review.routes")
 module.exports = [
   ...userRoutes,
   ...authRoutes,
@@ -14,4 +14,5 @@ module.exports = [
   ...cartRoutes,
   ...orderRoutes,
   ...addressRoutes,
+  ...reviewRoute,
 ];
