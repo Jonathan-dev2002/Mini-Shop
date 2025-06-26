@@ -172,6 +172,11 @@ Visit **[http://localhost:3000/documentation](http://localhost:3000/documentatio
 * `PUT /review/{id}` – Update your own review (Owner only)
 * `DELETE /review/{id}` – Delete a review (Owner or Admin)
 
+### Favorites (Authenticated users)
+* `GET /favorites` – Get all favorite products for the current user
+* `POST /favorites` – Add a product to favorites
+* `DELETE /favorites/{productId}` – Remove a product from favorites
+
 ## Contact
 
 For questions or feedback, reach out to:
