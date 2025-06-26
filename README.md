@@ -164,6 +164,14 @@ Visit **[http://localhost:3000/documentation](http://localhost:3000/documentatio
 * `DELETE /addresses/{id}` – Delete an address
 * `PUT /addresses/{id}/default` – Set an address as the default
 
+### Reviews
+
+* `POST /review` – Create a new review (Authenticated users)
+* `GET /review` – Get all reviews for a product (e.g., /review?productId=1)
+* `GET /review/{id}` – Get a single review by its ID
+* `PUT /review/{id}` – Update your own review (Owner only)
+* `DELETE /review/{id}` – Delete a review (Owner or Admin)
+
 ## Contact
 
 For questions or feedback, reach out to:
