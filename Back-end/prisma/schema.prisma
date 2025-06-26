@@ -35,6 +35,7 @@ model User {
   orders      Order[]
   addresses   Address[] // ความสัมพันธ์ไปยังตาราง Address
   reviews   Review[]
+  favorites Favorite[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -81,6 +82,7 @@ model Product {
   cartItems   CartItem[]
   orderItems  OrderItem[]
   reviews         Review[]
+  favorites Favorite[]
   averageRating   Float @default(0)
   reviewCount     Int @default(0)
   createdAt   DateTime    @default(now())
@@ -143,6 +145,17 @@ model Review {
   productId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  createdAt DateTime @default(now())
 
   @@unique([userId, productId])
 }
