@@ -1,5 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../utils/prisma");
 
 //สร้างคำสั่งซื้อจากตะกร้าของผู้ใช้
 const createOrder = async (userId, paymentMethod, shippingAddress, phone) => {

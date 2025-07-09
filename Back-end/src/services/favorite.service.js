@@ -1,5 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../utils/prisma");
 const Boom = require("@hapi/boom");
 
 const addFavorite = async (userId, productId) => {
