@@ -7,6 +7,7 @@ A simple e-commerce application with a **Nuxt.js** frontend and **Hapi.js** back
 * [Features](#features)
 * [Tech Stack](#tech-stack)
 * [Prerequisites](#prerequisites)
+* [Security & Rate Limiting](#security--rate-limiting)
 * [Installation](#installation)
 * [Environment Variables](#environment-variables)
 * [Database Setup](#database-setup)
@@ -44,6 +45,13 @@ A simple e-commerce application with a **Nuxt.js** frontend and **Hapi.js** back
 * npm or yarn
 * PostgreSQL instance
 * Cloudinary Account (for API Key, Secret, and Cloud Name)
+
+## Security & Rate Limiting
+
+- **Rate Limiting:** 100 req/minute per IP (429 Too Many Requests เมื่อเกิน)  
+- **Security Headers:**  
+  - HSTS, X-Frame-Options, X-Content-Type-Options  
+  - Content-Security-Policy, Referrer-Policy, Permissions-Policy  
 
 ## Installation
 
@@ -176,6 +184,12 @@ Visit **[http://localhost:3000/documentation](http://localhost:3000/documentatio
 * `GET /favorites` – Get all favorite products for the current user
 * `POST /favorites` – Add a product to favorites
 * `DELETE /favorites/{productId}` – Remove a product from favorites
+
+### Health-check & Metrics
+- `GET /health`  
+  Verifies that the application and database connection are healthy (returns 200 OK if everything is fine, 503 Service Unavailable if there’s a failure).
+- `GET /metrics`  
+  Exposes Prometheus-compatible metrics, including CPU usage, memory usage, HTTP request latency, request counts, and more.
 
 ## Contact
 
