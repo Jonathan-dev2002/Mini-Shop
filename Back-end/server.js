@@ -6,6 +6,7 @@ const routes = require("./src/routes");
 const { swaggerPlugin } = require("./src/plugins/swagger");
 const { authPlugin } = require("./src/plugins/auth");
 const { responseWrapperPlugin } = require('./src/plugins/responseWrapperPlugin');
+const { securityPlugin } = require('./src/plugins/securityPlugin');
 
 const init = async () => {
   const server = Hapi.server({
@@ -31,6 +32,7 @@ const init = async () => {
   await server.register(prismaPlugin);
   await server.register(swaggerPlugin); // url: '/documentation',
   await server.register(authPlugin);
+  await server.register(securityPlugin);
   await server.register(responseWrapperPlugin);
   
 
