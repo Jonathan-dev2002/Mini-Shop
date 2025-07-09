@@ -17,15 +17,18 @@ A simple e-commerce application with a **Nuxt.js** frontend and **Hapi.js** back
 
 ## Features
 
-* User registration & JWT authentication
-* Role-based access control (USER / ADMIN)
-* Product & Category management (CRUD)
-* Shopping cart (add, update, remove items)
-* Order checkout & history
-* Address management (CRUD, set default)
-* Image uploads handled via **Cloudinary**
-* Validation via Zod
-* API documentation with Swagger UI
+* User registration & JWT authentication  
+* Role-based access control (USER / ADMIN)  
+* Product & Category management (CRUD)  
+* Shopping cart (add, update, remove items)  
+* Order checkout & history  
+* Address management (CRUD, set default)  
+* Product reviews (create, list, update, delete)  
+* Favorites / Wishlist (add, remove, list)  
+* Health-check & Metrics endpoints (`/health`, `/metrics`)  
+* Image uploads handled via **Cloudinary**  
+* Input validation via Zod  
+* API documentation with Swagger UI  
 
 ## Tech Stack
 
