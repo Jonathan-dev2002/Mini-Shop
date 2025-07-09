@@ -5,6 +5,12 @@ exports.responseWrapperPlugin = {
   version: '1.0.0',
   register: async (server) => {
     server.ext('onPreResponse', (request, h) => {
+
+      // Skip wrapping for health & metrics endpoints
+      if (request.path === '/health' || request.path === '/metrics') {
+        return h.continue;
+      }
+
       const response = request.response;
 
       // ถ้าเป็น Boom error (isBoom === true) ก็ใช้ errorResponse

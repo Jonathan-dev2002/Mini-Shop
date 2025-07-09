@@ -7,6 +7,7 @@ const { swaggerPlugin } = require("./src/plugins/swagger");
 const { authPlugin } = require("./src/plugins/auth");
 const { responseWrapperPlugin } = require('./src/plugins/responseWrapperPlugin');
 const { securityPlugin } = require('./src/plugins/securityPlugin');
+const { healthMetricsPlugin } = require("./src/plugins/healthMetricsPlugin");
 
 const init = async () => {
   const server = Hapi.server({
@@ -33,6 +34,7 @@ const init = async () => {
   await server.register(swaggerPlugin); // url: '/documentation',
   await server.register(authPlugin);
   await server.register(securityPlugin);
+  await server.register(healthMetricsPlugin);
   await server.register(responseWrapperPlugin);
   
 
