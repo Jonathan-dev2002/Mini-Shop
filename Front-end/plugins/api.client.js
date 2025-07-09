@@ -16,6 +16,13 @@ export default defineNuxtPlugin(() => {
             };
           }
         },
+        
+        async onResponse({ request, response, options }) {
+
+          if (response._data && response._data.hasOwnProperty('data')) {
+            response._data = response._data.data;
+          }
+        }
       }),
     },
   };
