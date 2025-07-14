@@ -2,9 +2,8 @@ const {
   createProductSchema,
   updateProductSchema,
   idParamSchema,
-  listProductsQuerySchema
 } = require("../validations/product.validation");
-const productService = require("../services/product.service");
+const productService = require("../services/product.Oldservice");
 const validateZod = require("../validations/validateZod");
 const Boom = require("@hapi/boom");
 const {
@@ -13,25 +12,18 @@ const {
 } = require("../utils/cloudinary");
 
 const getAllProduct = {
-  description: "Get list all product (with pagination & filtering)",
+  description: "Get list all product",
   tags: ["api", "product"],
   auth: false,
-  validate: {
-    query: validateZod(listProductsQuerySchema),
-  },
   handler: async (request, h) => {
     try {
-      const {
-        categoryId, search, minPrice, maxPrice, page, limit
-      } = await listProductsQuerySchema.parseAsync(request.query);
-      
-      const result = await productService.getAllProducts({
-        categoryId, search, minPrice, maxPrice, page, limit
-      });
-      return h.response(result).code(200);
+      const { categoryId } = request.query;
+
+      const product = await productService.getAllProducts(categoryId);
+      return h.response(product).code(200);
     } catch (error) {
       console.error("Error fetching products:", error);
-      return Boom.internal("Failed to fetch products", error.message);
+      return h.response({ message: "Failed to fetch products" }).code(500);
     }
   },
 };

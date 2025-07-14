@@ -1,49 +1,26 @@
 const prisma = require("../utils/prisma");
 
-const getAllProducts = async ({
-  categoryId,
-  search,
-  minPrice,
-  maxPrice,
-  page,
-  limit,
-}) => {
-
+const getAllProducts = async (categoryId) => {
   const whereClause = {};
-  if (categoryId) whereClause.categoryId = categoryId;
-  if (search) whereClause.name = { contains: search, mode: "insensitive" }; //insensitive ค้นหานั้นไม่สนใจตัวอักษรเล็ก/ใหญ่
-  if (minPrice != null || maxPrice != null) {
-    whereClause.price = {
-      ...(minPrice != null && { gte: minPrice }),
-      ...(maxPrice != null && { lte: maxPrice }),
-    };
+
+  if (categoryId) {
+    const numericCategoryId = Number(categoryId);
+    if (!isNaN(numericCategoryId)) {
+      whereClause.categoryId = numericCategoryId;
+    } else {
+      console.warn(
+        `Invalid categoryId format: ${categoryId}. Fetching all products.`
+      );
+    }
   }
 
-  // total count for pagination meta
-  const total = await prisma.product.count({ where: whereClause });
-
-  const skip = (page - 1) * limit;
-  const take = limit;
-
-  // fetch paginated records
-  const data = await prisma.product.findMany({
+  return await prisma.product.findMany({
     where: whereClause,
     include: { category: true },
-    orderBy: { createdAt: "desc" },
-    skip,
-    take,
-  });
-
-  // return both data and meta
-  return {
-    data,
-    meta: {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
+    orderBy: {
+      createdAt: "desc",
     },
-  };
+  });
 };
 
 const getProductById = async (id) => {

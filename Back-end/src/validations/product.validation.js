@@ -39,8 +39,19 @@ const idParamSchema = z.object({
   id: z.coerce.number().int().positive("ID must be a positive integer"),
 });
 
+//for listing products with pagination & filters
+const listProductsQuerySchema = z.object({
+  categoryId: z.coerce.number().int().positive().optional(),
+  search:     z.string().optional(),
+  minPrice:   z.coerce.number().nonnegative().optional(),
+  maxPrice:   z.coerce.number().nonnegative().optional(),
+  page:       z.coerce.number().int().min(1).optional().default(1),
+  limit:      z.coerce.number().int().min(1).optional().default(10),
+});
+
 module.exports = {
   createProductSchema,
   updateProductSchema,
   idParamSchema,
+  listProductsQuerySchema
 };

@@ -1,4 +1,3 @@
-<!-- Front-end/pages/categorys/index.vue -->
 <template>
   <div class="bg-gray-50 min-h-screen">
     <div class="max-w-8xl mx-auto px-6 py-5 border-b border-orange-200">

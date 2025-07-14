@@ -6,7 +6,7 @@ export default defineNuxtPlugin(() => {
     provide: {
       api: $fetch.create({
         baseURL: config.public.apiBase,
-        credentials: "include",
+        credentials: "include", // ให้เบราว์เซอร์แนบ Cookie ไปกับ request ด้วย
         async onRequest({ options }) {
           const token = useCookie("token").value;
           if (token) {
