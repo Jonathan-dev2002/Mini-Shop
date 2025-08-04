@@ -64,7 +64,7 @@ const categoryId = route.params.id
 const nuxtApp = useNuxtApp()
 
 
-const { data: categoryData, pending: pendingCategory, error: categoryError } = await useAsyncData(
+const { data: categoryData, pending: pendingCategory, error: categoryError } =  useAsyncData(
     `category-${categoryId}`,
     () => nuxtApp.$api(`/categorys/${categoryId}`)
 )
