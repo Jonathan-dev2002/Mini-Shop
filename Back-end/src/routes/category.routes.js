@@ -4,17 +4,17 @@ const { requireAdmin } = require("../utils/authorization");
 module.exports = [
   {
     method: "GET",
-    path: "/categorys",
+    path: "/categories",
     options: categoryController.getAllCategory,
   },
   {
     method: "GET",
-    path: "/categorys/{id}",
+    path: "/categories/{id}",
     options: categoryController.getCategoryById,
   },
   {
     method: "POST",
-    path: "/categorys",
+    path: "/categories",
     options: {
       ...categoryController.createCategory.options,
       pre: [{ method: requireAdmin }],
@@ -22,7 +22,7 @@ module.exports = [
   },
   {
     method: "PUT",
-    path: "/categorys/{id}",
+    path: "/categories/{id}",
     options: {
       ...categoryController.updateCategory,
       pre: [{ method: requireAdmin }],
@@ -30,7 +30,7 @@ module.exports = [
   },
   {
     method: "DELETE",
-    path: "/categorys/{id}",
+    path: "/categories/{id}",
     options: {
       ...categoryController.deleteCategory,
       pre: [{ method: requireAdmin }],
