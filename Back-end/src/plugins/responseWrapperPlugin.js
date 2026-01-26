@@ -1,3 +1,5 @@
+// Back-end\src\plugins\responseWrapperPlugin.js
+
 const { successResponse, errorResponse } = require('../utils/responseWrapper');
 
 exports.responseWrapperPlugin = {
@@ -5,24 +7,35 @@ exports.responseWrapperPlugin = {
   version: '1.0.0',
   register: async (server) => {
     server.ext('onPreResponse', (request, h) => {
-
-      // Skip wrapping for health & metrics endpoints
-      if (request.path === '/health' || request.path === '/metrics') {
-        return h.continue;
-      }
-
       const response = request.response;
 
-      // ถ้าเป็น Boom error (isBoom === true) ก็ใช้ errorResponse
+      // --- Logic ที่ปรับปรุงใหม่ ---
+
+      // 1. จัดการกับ Error ก่อนเป็นอันดับแรก
       if (response.isBoom) {
+        // ถ้าเป็น Boom error ให้จัดรูปแบบด้วย errorResponse แล้วจบการทำงาน
         const err = response;
         const message = err.output.payload.message || 'Internal Error';
         const statusCode = err.output.statusCode || 500;
         return errorResponse(h, message, statusCode);
       }
 
-      // ถ้าเป็น JSON response ให้ wrap ด้วย successResponse
-      // เช็ก content-type ว่า JSON หรือ plain
+      // 2. ตรวจสอบ Path ที่ต้องการ "ข้าม" การห่อข้อมูล
+      const pathsToSkip = [
+        /^\/documentation/,
+        /^\/swaggerui/,
+        /^\/health/,
+        /^\/metrics/
+      ];
+
+      // .some คือการเช็คว่ามีอย่างน้อย 1 เงื่อนไขใน array ที่เป็นจริงหรือไม่
+      const shouldSkip = pathsToSkip.some(regex => regex.test(request.path));
+
+      if (shouldSkip) {
+        return h.continue; // ถ้าเป็น Path ที่ต้องข้าม ก็ปล่อยผ่าน
+      }
+
+      // 3. ถ้าไม่ใช่ Error และไม่ใช่ Path ที่ต้องข้าม ก็ทำการห่อข้อมูลตามปกติ
       const contentType = response.headers && response.headers['content-type'];
       if (
         response.source != null &&
@@ -32,7 +45,7 @@ exports.responseWrapperPlugin = {
         return successResponse(h, response.source);
       }
 
-      // กรณีอื่น (เช่น ไฟล์, สตรีม) ไม่ยุ่ง
+      // 4. ถ้าไม่ใช่กรณีข้างบนทั้งหมด ก็ปล่อยผ่าน
       return h.continue;
     });
   }
