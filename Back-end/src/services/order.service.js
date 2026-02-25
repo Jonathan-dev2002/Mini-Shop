@@ -43,6 +43,10 @@ const createOrder = async (userId, paymentMethod, shippingAddress, phone) => {
       quantity: item.quantity,
       unitPrice: item.product.price,
     }));
+
+    // for (const itemData of orderItemsData) {
+    //   await tx.orderItem.create({ data: itemData });
+    // }
     await tx.orderItem.createMany({ data: orderItemsData });
 
     for (const item of cart.items) {

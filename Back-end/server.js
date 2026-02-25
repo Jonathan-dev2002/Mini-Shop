@@ -33,7 +33,7 @@ const init = async () => {
   await server.register(prismaPlugin);
   await server.register(swaggerPlugin); // url: '/documentation',
   await server.register(authPlugin);
-  await server.register(securityPlugin);
+  // await server.register(securityPlugin);
   await server.register(healthMetricsPlugin);
   await server.register(responseWrapperPlugin);
   
