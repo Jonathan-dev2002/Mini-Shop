@@ -13,7 +13,7 @@ module.exports = [
   },
   {
     method: 'DELETE',
-    path: '/favorites/{productId}',
+    path: '/favoritess/{productId}',
     options: favoriteController.removeFavorite,
   },
 ];
